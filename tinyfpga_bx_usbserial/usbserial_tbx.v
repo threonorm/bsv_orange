@@ -49,17 +49,12 @@ module usbserial_tbx (
     wire usb_p_rx;
     wire usb_n_rx;
     wire usb_tx_en;
-    reg		[31 : 0]		reset_tick;
-	reg					host_rst;
-
-    // wire [11:0] debug_dum;
-	localparam ticK_over = (48000000 / 300) - 1;
-
+  
 
     // usb uart - this instanciates the entire USB device.
     usb_uart uart (
         .clk_48mhz  (clk_48mhz),
-        .reset      (reset | host_rst),
+        .reset      (reset),
 
         // pins
         .pin_usb_p( pin_usb_p ),
@@ -76,32 +71,6 @@ module usbserial_tbx (
 
         //.debug( debug )
     );
-
-    always@(posedge clk_48mhz)begin
-		
-		if(reset)begin
-			
-			host_rst <= 1'b0;
-			reset_tick <= 'd0;
-			
-		end else begin
-			if(!(usb_p_in | usb_n_in))begin
-				if(reset_tick >= ticK_over)
-					reset_tick <= 'd0;
-				else
-					reset_tick <= reset_tick + 'd1;
-			end else begin
-				reset_tick <= 'd0;
-			end
-			
-			if(reset_tick >= ticK_over)
-				host_rst <= 1'b1;
-			else
-				host_rst <= 1'b0;
-		end
-	end
-
-
 
     // USB Host Detect Pull Up
     assign pin_pu = 1'b1;
