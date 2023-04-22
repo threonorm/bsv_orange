@@ -189,11 +189,6 @@ IOBUF PORT "ddram_gnd[1]" SLEWRATE=FAST;
 IOBUF PORT "ddram_gnd[1]" IO_TYPE=SSTL135_II;
 LOCATE COMP "rgb_led0_r" SITE "K4";
 IOBUF PORT "rgb_led0_r" IO_TYPE=LVCMOS33;
-
-
-LOCATE COMP "pin_led" SITE "K4";
-IOBUF PORT "pin_led" IO_TYPE=LVCMOS33;
-
 LOCATE COMP "rgb_led0_g" SITE "M3";
 IOBUF PORT "rgb_led0_g" IO_TYPE=LVCMOS33;
 LOCATE COMP "rgb_led0_b" SITE "J3";
@@ -251,10 +246,10 @@ LOCATE COMP "spiflash4x_dq[2]" SITE "R18";
 IOBUF PORT "spiflash4x_dq[2]" IO_TYPE=LVCMOS33;
 LOCATE COMP "spiflash4x_dq[3]" SITE "N18";
 IOBUF PORT "spiflash4x_dq[3]" IO_TYPE=LVCMOS33;
-LOCATE COMP "pin_usb_p" SITE "N1";
-IOBUF PORT "pin_usb_p" IO_TYPE=LVCMOS33;
-LOCATE COMP "pin_usb_n" SITE "M2";
-IOBUF PORT "pin_usb_n" IO_TYPE=LVCMOS33;
+LOCATE COMP "usb_core$pin_usb_p" SITE "N1";
+IOBUF PORT "usb_core$pin_usb_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "usb_core$pin_usb_n" SITE "M2";
+IOBUF PORT "usb_core$pin_usb_n" IO_TYPE=LVCMOS33;
 LOCATE COMP "pin_pu" SITE "N2";
 IOBUF PORT "pin_pu" IO_TYPE=LVCMOS33;
 

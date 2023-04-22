@@ -1,6 +1,6 @@
 PROJ=color
-TOP_MODULE=usbserial_tbx
-# TOP_MODULE=top
+# TOP_MODULE=usbserial_tbx
+TOP_MODULE=top
 
 # optionally set the name of a module used for simulation, and number of cycles to simulate.
 TOP_SIMULATION_MODULE=sim

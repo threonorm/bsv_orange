@@ -7,7 +7,7 @@ interface OrangeCrab;
     interface Usb usb;
 
     (* always_ready, prefix = "" *)
-    interface Bit#(1) pin_pu;
+    method Bit#(1) pin_pu;
     
     (* always_ready, prefix = "" *)
     method Bit#(1) rgb_led0_r();
@@ -20,7 +20,7 @@ endinterface
 typedef enum {Addr, Data} State deriving (Eq,Bits);
 
 // Import BVI for the usb_bridge_top
-(* synthesize, default_clock_osc = "clk48", default_reset = "rst_n" *)
+(* synthesize, default_clock_osc = "pin_clk", default_reset = "rst_n" *)
 module top(OrangeCrab ifc);
     Reg#(Bit#(8)) cnt <- mkReg(0);
     Reg#(Bit#(16)) rcnt <- mkReg(0);
@@ -31,7 +31,7 @@ module top(OrangeCrab ifc);
     Reg#(Bit#(8)) r <- mkReg(0);
     Reg#(Bit#(8)) g <- mkReg(0);
     Reg#(Bit#(8)) b <- mkReg(0);
-    Reg#(Bit#(2)) req <- mkReg(0);
+    Reg#(Bit#(8)) req <- mkReg(0);
     Reg#(State) s <- mkReg(Addr);
 
     rule reset_setup;
@@ -42,30 +42,23 @@ module top(OrangeCrab ifc);
 
     rule get_w if (s == Addr);
         let addr <- usb_core.uart_out();
-        case (addr)
-        pack('r'): begin 
-            req <= 0;
-            end
-        pack('g'): begin 
-            req <= 1;
-            end
-        pack('b'): begin 
-            req <= 2;
-            end
-       endcase
-       s <= Data;
+        req <= addr;
+        s <= Data;
     endrule
 
-    rule get_w if (s == Data);
+    rule get_d if (s == Data);
         let data <- usb_core.uart_out();
         case (req)
-        pack('r'): begin 
+        /* pack('r'): begin  */
+        8'd114: begin 
             r <= data;
             end
-        pack('g'): begin 
+        /* pack('g'): begin  */
+        8'd103: begin 
             g <= data;
             end
-        pack('b'): begin 
+        /* pack('b'): begin  */
+        8'd98: begin 
             b <= data;
             end
        endcase
@@ -74,24 +67,24 @@ module top(OrangeCrab ifc);
 
 
     method Bit#(1) rgb_led0_r();
-        return pack(cnt < r);
+        return ~pack(cnt < r);
     endmethod
 
     method Bit#(1) rgb_led0_g();
-        return pack(cnt < g);
+        return ~pack(cnt < g);
     endmethod
 
     method Bit#(1) rgb_led0_b();
-        return pack(cnt < b);
+        return ~pack(cnt < b);
     endmethod
 
-    method Bit#(1) usb_pullup;
+    method Bit#(1) pin_pu;
         return 1;
     endmethod
     
     interface usb = interface Usb;
-        interface usb_d_p = usbp;
-        interface usb_d_n = usbn;
+        interface pin_usb_p = usbp;
+        interface pin_usb_n = usbn;
         /* interface usb_pullup = ;  */
     endinterface;
 endmodule
