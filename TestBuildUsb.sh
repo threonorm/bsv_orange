@@ -1,5 +1,5 @@
 #!/bin/bash
-USBCORE=/home/bthom/git/orangecrab-template/tinyfpga_bx_usbserial/
+USBCORE=/home/bthom/git/bsv_orange/tinyfpga_bx_usbserial/
 rm -rf build/
 mkdir -p build
 
