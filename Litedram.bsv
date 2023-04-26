@@ -117,5 +117,8 @@ module mkLitedram(Litedram);
     method wb_ctrl_cti(wb_ctrl_cti) enable ((* inhigh *) EN_wb_ctrl_cti);
     method wb_ctrl_bte(wb_ctrl_bte) enable ((*inhigh *) EN_wb_ctrl_bte);
     method wb_ctrl_err wb_ctrl_err;
+    schedule (ddr_pins_ddram_a, ddr_pins_ddram_ba, ddr_pins_ddram_ras_n, ddr_pins_ddram_cas_n, ddr_pins_ddram_we_n, ddr_pins_ddram_cs_n, ddr_pins_ddram_dm, ddr_pins_ddram_clk_p, init_done, init_error, pll_locked, wb_ctrl_dat_r, wb_ctrl_ack, wb_ctrl_err, ddr_pins_ddram_dq, ddr_pins_ddram_dqs_p, ddr_pins_ddram_dqs_n, ddr_pins_ddram_clk_n, ddr_pins_ddram_cke, ddr_pins_ddram_odt, ddr_pins_ddram_reset_n, user_command, write, read, wb_ctrl_adr, wb_ctrl_dat_w, wb_ctrl_sel, wb_ctrl_cyc, wb_ctrl_stb, wb_ctrl_we, wb_ctrl_cti, wb_ctrl_bte )
+        CF 
+            (ddr_pins_ddram_a, ddr_pins_ddram_ba, ddr_pins_ddram_ras_n, ddr_pins_ddram_cas_n, ddr_pins_ddram_we_n, ddr_pins_ddram_cs_n, ddr_pins_ddram_dm, ddr_pins_ddram_clk_p, init_done, init_error, pll_locked, wb_ctrl_dat_r, wb_ctrl_ack, wb_ctrl_err, ddr_pins_ddram_dq, ddr_pins_ddram_dqs_p, ddr_pins_ddram_dqs_n, ddr_pins_ddram_clk_n, ddr_pins_ddram_cke, ddr_pins_ddram_odt, ddr_pins_ddram_reset_n, user_command, write, read, wb_ctrl_adr, wb_ctrl_dat_w, wb_ctrl_sel, wb_ctrl_cyc, wb_ctrl_stb, wb_ctrl_we, wb_ctrl_cti, wb_ctrl_bte);
 
 endmodule
