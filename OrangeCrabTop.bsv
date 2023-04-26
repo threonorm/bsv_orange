@@ -1,5 +1,6 @@
 import UsbByte::*;
 import GetPut::*;
+import Litedram::*;
 
 
 interface OrangeCrab;
@@ -16,6 +17,9 @@ interface OrangeCrab;
     (* always_ready, prefix = "" *)
     method Bit#(1) rgb_led0_b();
 
+    (* prefix = "" *)
+    interface Dram dram;
+
 endinterface
 typedef enum {Addr, Data} State deriving (Eq,Bits);
 
@@ -25,6 +29,9 @@ module top(OrangeCrab ifc);
     Reg#(Bit#(8)) cnt <- mkReg(0);
     Reg#(Bit#(16)) rcnt <- mkReg(0);
     UsbCore usb_core <- mkUsbCore();
+    Clock clk <- exposeCurrentClock;
+    Reset rst <- exposeCurrentReset;
+    Litedram litedram <- mkLitedram(clk,rst);
     Inout#(Bit#(1)) usbp = usb_core.usb_d_p; 
     Inout#(Bit#(1)) usbn = usb_core.usb_d_n; 
 
@@ -34,6 +41,13 @@ module top(OrangeCrab ifc);
     Reg#(Bit#(8)) req <- mkReg(0);
     Reg#(State) s <- mkReg(Addr);
 
+    rule placeholder;
+        litedram.wb_ctrl_adr(?);
+        litedram.wb_ctrl_dat_w(?);
+        litedram.wb_ctrl_sel(?);
+        litedram.wb_ctrl_cti(?);
+        litedram.wb_ctrl_bte(?);
+    endrule
     rule reset_setup;
         cnt <= cnt + 1;
         if (rcnt < 10) rcnt <= rcnt + 1;
@@ -87,4 +101,5 @@ module top(OrangeCrab ifc);
         interface pin_usb_n = usbn;
         /* interface usb_pullup = ;  */
     endinterface;
+    interface dram = litedram.ddr_pins;
 endmodule

@@ -16,19 +16,19 @@ interface Dram;
     (* always_ready, always_enabled, prefix = "" *)
     method Action      ddram_dq(Bit#(16) i);
     (* always_ready, always_enabled, prefix = "" *)
-    method Action       ddram_dqs_p(Bit#(2) i);
+    method Action       ddram_dqs_p(Bit#(2) j);
     (* always_ready, always_enabled, prefix = "" *)
-    method Action      ddram_dqs_n(Bit#(2) i);
+    method Action      ddram_dqs_n(Bit#(2) k);
     (* always_ready, prefix = "" *)
     method Bit#(1)           ddram_clk_p;
     (* always_ready, always_enabled, prefix = "" *)
-    method Action            ddram_clk_n(Bit#(1) i);
+    method Action            ddram_clk_n(Bit#(1) l);
     (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_cke(Bit#(1) i);
+    method Action           ddram_cke(Bit#(1) m);
     (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_odt(Bit#(1) i);
+    method Action           ddram_odt(Bit#(1) n);
     (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_reset_n(Bit#(1) i);
+    method Action           ddram_reset_n(Bit#(1) o);
 endinterface
 
 interface Litedram;
@@ -49,13 +49,16 @@ interface Litedram;
     interface Clock user_clk;
     interface Reset user_rst; 
 
-    (* always_ready, always_enabled, prefix = "" *)
+    (* always_ready, prefix = "" *)
+    /* (* always_ready, always_enabled, prefix = "" *) */
     method Action wb_ctrl_adr(Bit#(30) i);
-    (* always_ready, always_enabled, prefix = "" *)
+    (* always_ready, prefix = "" *)
+    /* (* always_ready, always_enabled, prefix = "" *) */
     method Action wb_ctrl_dat_w(Bit#(32) i);
     (* always_ready, prefix = "" *)
     method Bit#(32) wb_ctrl_dat_r;
-    (* always_ready, always_enabled, prefix = "" *)
+    /* (* always_ready, always_enabled, prefix = "" *) */
+    (* always_ready, prefix = "" *)
     method Action wb_ctrl_sel(Bit#(4) i);
     (* always_ready, prefix = "" *)
     method Action wb_ctrl_cyc;
@@ -63,18 +66,23 @@ interface Litedram;
     method Action wb_ctrl_stb;
     (* always_ready, prefix = "" *)
     method Bit#(1) wb_ctrl_ack;
-    (* always_ready, always_enabled, prefix = "" *)
-    method Action wb_ctrl_we(Bit#(1) i);
-    (* always_ready, always_enabled, prefix = "" *)
+    /* (* always_ready, always_enabled, prefix = "" *) */
+    (* always_ready, prefix = "" *)
+    method Action wb_ctrl_we();
+    /* (* always_ready, always_enabled, prefix = "" *) */
+    (* always_ready, prefix = "" *)
     method Action wb_ctrl_cti(Bit#(3) i);
-    (* always_ready, always_enabled, prefix = "" *)
+    /* (* always_ready, always_enabled, prefix = "" *) */
+    (* always_ready,  prefix = "" *)
     method Action wb_ctrl_bte(Bit#(2) i);
     (* always_ready, prefix = "" *)
     method Bit#(1) wb_ctrl_err;
 endinterface
 
 import "BVI" litedram =
-module mkLitedram(Litedram);
+module mkLitedram(Clock clk, Reset rst, Litedram ifc);
+    default_clock clk(clk);
+    default_reset rst(rst);
     interface Dram ddr_pins;
         method ddram_a ddram_a;
         method ddram_ba  ddram_ba;
@@ -106,16 +114,16 @@ module mkLitedram(Litedram);
 
 
     method pll_locked pll_locked();
-    method wb_ctrl_adr(wb_ctrl_adr) enable ((* inhigh *)  EN_wb_ctrl_adr);
-    method wb_ctrl_dat_w(wb_ctrl_dat_w) enable ((*inhigh *) EN_wb_ctrl_dat_w);
+    method wb_ctrl_adr(wb_ctrl_adr) enable ((*inhigh *) EN_1);
+    method wb_ctrl_dat_w(wb_ctrl_dat_w) enable ((*inhigh *) EN_2);
     method wb_ctrl_dat_r wb_ctrl_dat_r;
-    method wb_ctrl_sel(wb_ctrl_sel) enable ((* inhigh *) EN_wb_ctrl_sel);
+    method wb_ctrl_sel(wb_ctrl_sel) enable ((*inhigh *) EN_3);
     method wb_ctrl_cyc() enable (wb_ctrl_cyc);
     method wb_ctrl_stb() enable (wb_ctrl_stb);
     method wb_ctrl_ack wb_ctrl_ack;
-    method wb_ctrl_we(wb_ctrl_we) enable ((* inhigh *)  EN_wb_ctrl_we);
-    method wb_ctrl_cti(wb_ctrl_cti) enable ((* inhigh *) EN_wb_ctrl_cti);
-    method wb_ctrl_bte(wb_ctrl_bte) enable ((*inhigh *) EN_wb_ctrl_bte);
+    method wb_ctrl_we() enable (wb_ctrl_we);
+    method wb_ctrl_cti(wb_ctrl_cti) enable ((*inhigh *) EN_7);
+    method wb_ctrl_bte(wb_ctrl_bte) enable ((*inhigh *) EN_8);
     method wb_ctrl_err wb_ctrl_err;
     schedule (ddr_pins_ddram_a, ddr_pins_ddram_ba, ddr_pins_ddram_ras_n, ddr_pins_ddram_cas_n, ddr_pins_ddram_we_n, ddr_pins_ddram_cs_n, ddr_pins_ddram_dm, ddr_pins_ddram_clk_p, init_done, init_error, pll_locked, wb_ctrl_dat_r, wb_ctrl_ack, wb_ctrl_err, ddr_pins_ddram_dq, ddr_pins_ddram_dqs_p, ddr_pins_ddram_dqs_n, ddr_pins_ddram_clk_n, ddr_pins_ddram_cke, ddr_pins_ddram_odt, ddr_pins_ddram_reset_n, user_command, write, read, wb_ctrl_adr, wb_ctrl_dat_w, wb_ctrl_sel, wb_ctrl_cyc, wb_ctrl_stb, wb_ctrl_we, wb_ctrl_cti, wb_ctrl_bte )
         CF 
