@@ -14,21 +14,21 @@ interface Dram;
     (* always_ready, prefix = "" *)
     method Bit#(2) ddram_dm;
     (* always_ready, always_enabled, prefix = "" *)
-    method Action      ddram_dq(Bit#(16) i);
+    method Action      ddram_dq(Bit#(16) ddram_dq);
     (* always_ready, always_enabled, prefix = "" *)
-    method Action       ddram_dqs_p(Bit#(2) j);
+    method Action       ddram_dqs_p(Bit#(2) ddram_dqs_p);
     (* always_ready, always_enabled, prefix = "" *)
-    method Action      ddram_dqs_n(Bit#(2) k);
+    method Action      ddram_dqs_n(Bit#(2) ddram_dqs_n);
     (* always_ready, prefix = "" *)
     method Bit#(1)           ddram_clk_p;
-    (* always_ready, always_enabled, prefix = "" *)
-    method Action            ddram_clk_n(Bit#(1) l);
-    (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_cke(Bit#(1) m);
-    (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_odt(Bit#(1) n);
-    (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_reset_n(Bit#(1) o);
+    (* always_ready,  prefix = "" *)
+    method Action            ddram_clk_n;
+    (* always_ready,  prefix = "" *)
+    method Action           ddram_cke;
+    (* always_ready,  prefix = "" *)
+    method Action           ddram_odt;
+    (* always_ready,  prefix = "" *)
+    method Action           ddram_reset_n;
 endinterface
 
 interface Litedram;
@@ -95,10 +95,10 @@ module mkLitedram(Clock clk, Reset rst, Litedram ifc);
         method ddram_dqs_p(ddram_dqs_p) enable ((* inhigh *)  EN_ddram_dqs_p);
         method ddram_dqs_n(ddram_dqs_n) enable ((* inhigh *)  EN_ddram_dqs_n);
         method ddram_clk_p ddram_clk_p;
-        method ddram_clk_n(ddram_clk_n) enable ((* inhigh *)  EN_ddram_clk_n);
-        method ddram_cke(ddram_cke) enable ((* inhigh *)  EN_ddram_cke);
-        method ddram_odt(ddram_odt) enable ((* inhigh *)  EN_ddram_odt);
-        method ddram_reset_n(ddram_reset_n) enable ((* inhigh *)  EN_ddram_reset_n);
+        method ddram_clk_n() enable (ddram_clk_n); //enable ((* inhigh *)  EN_ddram_clk_n);
+        method ddram_cke() enable(ddram_cke); // enable ((* inhigh *)  EN_ddram_cke);
+        method ddram_odt() enable (ddram_odt); // enable ((* inhigh *)  EN_ddram_odt);
+        method ddram_reset_n() enable (ddram_reset_n); // enable ((* inhigh *)  EN_ddram_reset_n);
     endinterface
 
     output_clock user_clk(user_clk);
