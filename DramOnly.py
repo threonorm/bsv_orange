@@ -32,8 +32,9 @@ from litex.build.generic_platform import IOStandard, Subsignal, Pins, Misc
 
 from litex.soc.cores.clock import *
 from litex.soc.integration.soc_core import *
-from litex.soc.integration.soc_sdram import *
+#from litex.soc.integration.soc_sdram import *
 from litex.soc.integration.builder import *
+from litex.soc.interconnect import wishbone
 
 from litedram.modules import MT41K64M16, MT41K128M16, MT41K256M16, MT41K512M16
 from litedram.phy import ECP5DDRPHY
@@ -44,27 +45,25 @@ from litex.soc.doc import generate_docs
 from migen.genlib.cdc import MultiReg
 
 
-from modules.csr_cdc import CSRClockDomainWrapper
-from modules.io_block import IOPort
 
 from litex.soc.cores.gpio import GPIOTristate, GPIOOut, GPIOIn
 
 # from valentyusb.usbcore import io as usbio
 
 
-# connect all remaninig GPIO pins out
-extras = [
-    ("gpio", 0, Pins("GPIO:0 GPIO:1 GPIO:5 GPIO:6 GPIO:9 GPIO:10 GPIO:11 GPIO:12 GPIO:13  GPIO:18 GPIO:19 GPIO:20 GPIO:21"), 
-        IOStandard("LVCMOS33"), Misc("PULLMODE=DOWN")),
-    ("analog", 0,
-        Subsignal("mux", Pins("F4 F3 F2 H1")),
-        Subsignal("enable", Pins("F1")),
-        Subsignal("ctrl", Pins("G1")),
-        Subsignal("sense_p", Pins("H3"), IOStandard("LVCMOS33D")),
-        Subsignal("sense_n", Pins("G3")),
-        IOStandard("LVCMOS33")
-    )
-]
+# # connect all remaninig GPIO pins out
+# extras = [
+#     ("gpio", 0, Pins("GPIO:0 GPIO:1 GPIO:5 GPIO:6 GPIO:9 GPIO:10 GPIO:11 GPIO:12 GPIO:13  GPIO:18 GPIO:19 GPIO:20 GPIO:21"), 
+#         IOStandard("LVCMOS33"), Misc("PULLMODE=DOWN")),
+#     ("analog", 0,
+#         Subsignal("mux", Pins("F4 F3 F2 H1")),
+#         Subsignal("enable", Pins("F1")),
+#         Subsignal("ctrl", Pins("G1")),
+#         Subsignal("sense_p", Pins("H3"), IOStandard("LVCMOS33D")),
+#         Subsignal("sense_n", Pins("G3")),
+#         IOStandard("LVCMOS33")
+#     )
+# ]
 
 
 # CRG ---------------------------------------------------------------------------------------------
@@ -146,28 +145,32 @@ class BaseSoC(SoCCore):
     # }
     # interrupt_map.update(SoCCore.interrupt_map)
     #
-    def __init__(self, sys_clk_freq=int(48e6), toolchain="trellis", **kwargs):
+    def __init__(self, name="Rvtest", sys_clk_freq=int(48e6), toolchain="trellis", **kwargs):
         # Board Revision ---------------------------------------------------------------------------
         revision = kwargs.get("revision", "0.2")
         device = kwargs.get("device", "25F")
 
-        platform = orangecrab.Platform(revision=revision, device=device ,toolchain=toolchain)
+        platform = gsd_orangecrab.Platform(revision=revision, device=device ,toolchain=toolchain)
 
-        platform.add_extension(extras)
+        # platform.add_extension(extras)
 
-        wb_bus = wishbone.Interface()
-        self.add_wb_master(wb_bus)
+        self.submodules.crg = crg = CRG(platform, sys_clk_freq)
+      
         # Disconnect Serial Debug (Stub required so BIOS is kept happy)
         kwargs['uart_name']="stream"
 
         # SoCCore ----------------------------------------------------------------------------------
-        SoCCore.__init__(self, platform, clk_freq=sys_clk_freq, csr_data_width=32, **kwargs)
+        SoCCore.__init__(self, platform, clk_freq=sys_clk_freq, **kwargs)
+        wb_bus = wishbone.Interface()
+        self.bus.add_master(name="toProc", master=wb_bus)
+        platform.add_extension(wb_bus.get_ios("wb"))
+        wb_pads = platform.request("wb")
+        self.comb += wb_bus.connect_to_pads(wb_pads, mode="slave")
 
         # connect UART stream to NULL
-        self.comb += self.uart.source.ready.eq(1)
+        # self.comb += self.uart.source.ready.eq(1)
         
         # CRG --------------------------------------------------------------------------------------
-        self.submodules.crg = crg = CRG(platform, sys_clk_freq, with_usb_pll=True)
 
         # DDR3 SDRAM -------------------------------------------------------------------------------
         if not self.integrated_main_ram_size:
@@ -195,7 +198,7 @@ class BaseSoC(SoCCore):
                 phy                     = self.ddrphy,
                 module                  = sdram_module(sys_clk_freq, "1:2"),
                 origin                  = self.mem_map["main_ram"],
-                size                    = kwargs.get("max_sdram_size", 0x40000000),
+                size                    = 0,
                 l2_cache_size           = 0,
             )
 
@@ -210,7 +213,7 @@ def main():
     parser.add_argument("--gateware-toolchain", dest="toolchain", default="trellis",
         help="gateware toolchain to use, trellis (default) or diamond")
     builder_args(parser)
-    soc_sdram_args(parser)
+    soc_core_args(parser)
     trellis_args(parser)
     parser.add_argument("--sys-clk-freq", default=48e6,
                         help="system clock frequency (default=48MHz)")
@@ -252,7 +255,7 @@ def main():
     os.system(f"dfu-suffix -v 1209 -p 5af0 -a {dfu_file}")
 
 def argdict(args):
-    r = soc_sdram_argdict(args)
+    r = soc_core_argdict(args)
     for a in ["device", "revision", "sdram_device"]:
         arg = getattr(args, a, None)
         if arg is not None:
