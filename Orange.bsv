@@ -22,16 +22,16 @@ interface DramPins;
     method Action       ddram_dqs_p(Bit#(2) ddram_dqs_p);
     (* always_ready, prefix = "" *)
     method Bit#(1)           ddram_clk_p;
-    (* always_ready, always_enabled,  prefix = "" *)
-    method Action           ddram_cke(Bit#(1) ddram_cke);
-    (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_odt(Bit#(1) ddram_odt);
-    (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_reset_n(Bit#(1) ddram_reset_n);
-    (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_vccio(Bit#(6) ddram_vccio);
-    (* always_ready, always_enabled, prefix = "" *)
-    method Action           ddram_gnd(Bit#(2) ddram_gnd);
+    (* always_ready, prefix = "" *)
+    method Bit#(1)            ddram_cke();
+    (* always_ready, prefix = "" *)
+    method Bit#(1) ddram_odt();
+    (* always_ready, prefix = "" *)
+    method Bit#(1)  ddram_reset_n();
+    (* always_ready, prefix = "" *)
+    method Bit#(6)  ddram_vccio();
+    (* always_ready, prefix = "" *)
+    method Bit#(2)           ddram_gnd;
 endinterface
 
 interface GsdOrange;
@@ -57,11 +57,11 @@ module mkGsdOrange(GsdOrange);
         method ddram_dq(ddram_dq) enable ((* inhigh *)  EN_ddram_dq);
         method ddram_dqs_p(ddram_dqs_p) enable ((* inhigh *)  EN_ddram_dqs_p);
         method ddram_clk_p ddram_clk_p;
-        method ddram_cke(ddram_cke) enable ((* inhigh *)  EN_ddram_cke);
-        method ddram_odt(ddram_odt) enable ((* inhigh *)  EN_ddram_odt);
-        method ddram_reset_n(ddram_reset_n) enable ((* inhigh *)  EN_ddram_reset_n);
-        method ddram_vccio(ddram_vccio) enable ((* inhigh *) EN_ddram_vccio);
-        method ddram_gnd(ddram_gnd) enable ((* inhigh *) EN_gnd);
+        method ddram_cke ddram_cke();
+        method ddram_odt ddram_odt();
+        method ddram_reset_n ddram_reset_n();
+        method ddram_vccio ddram_vccio();
+        method ddram_gnd ddram_gnd();
     endinterface
      
     interface AXI4_Lite_Slave_Rd_Fab read;
@@ -98,7 +98,7 @@ module mkGsdOrange(GsdOrange);
         method pwstrb(axi_wstrb) enable ((*inhigh*) EN_wstrb);
 
         method axi_bvalid bvalid;
-        method pbready(bready) enable ((*inhigh*) EN_bready);
+        method pbready(axi_bready) enable ((*inhigh*) EN_bready);
         method axi_bresp bresp();
 	    /*  */
 	    /* method pawready(axi_awready) enable (* inhigh *) EN_awready); */
@@ -115,4 +115,80 @@ module mkGsdOrange(GsdOrange);
 	    /* method axi_bready bready; */
 	    /* method pbresp(axi_bresp) enable ((*inhigh *) EN_bresp); */
     endinterface
+    schedule (dram_ddram_dq,
+   dram_ddram_dqs_p,
+   dram_ddram_cke,
+   dram_ddram_odt,
+   dram_ddram_reset_n,
+   dram_ddram_vccio,
+   dram_ddram_gnd,
+   read_parvalid,
+   read_paraddr,
+   read_parprot,
+   read_prready,
+   write_pawvalid,
+   write_pawaddr,
+   write_pawprot,
+   write_pwvalid,
+   write_pwdata,
+   write_pwstrb,
+   write_pbready)
+  CF
+  (dram_ddram_dq,
+   dram_ddram_dqs_p,
+   dram_ddram_cke,
+   dram_ddram_odt,
+   dram_ddram_reset_n,
+   dram_ddram_vccio,
+   dram_ddram_gnd,
+   read_parvalid,
+   read_paraddr,
+   read_parprot,
+   read_prready,
+   write_pawvalid,
+   write_pawaddr,
+   write_pawprot,
+   write_pwvalid,
+   write_pwdata,
+   write_pwstrb,
+   write_pbready);
+/*   Assuming conflict. */
+/* Warning: "Orange.bsv", line 47, column 22: (P0200) */
+/*   No scheduling annotation given between methods */
+/*   (`dram_ddram_a', */
+/*    `dram_ddram_ba', */
+/*    `dram_ddram_ras_n', */
+/*    `dram_ddram_cas_n', */
+/*    `dram_ddram_we_n', */
+/*    `dram_ddram_cs_n', */
+/*    `dram_ddram_dm', */
+/*    `dram_ddram_clk_p', */
+/*    `read_arready', */
+/*    `read_rvalid', */
+/*    `read_rdata', */
+/*    `read_rresp', */
+/*    `write_awready', */
+/*    `write_wready', */
+/*    `write_bvalid', */
+/*    `write_bresp') */
+/*   and methods */
+/*   (`dram_ddram_dq', */
+/*    `dram_ddram_dqs_p', */
+/*    `dram_ddram_cke', */
+/*    `dram_ddram_odt', */
+/*    `dram_ddram_reset_n', */
+/*    `dram_ddram_vccio', */
+/*    `dram_ddram_gnd', */
+/*    `read_parvalid', */
+/*    `read_paraddr', */
+/*    `read_parprot', */
+/*    `read_prready', */
+/*    `write_pawvalid', */
+/*    `write_pawaddr', */
+/*    `write_pawprot', */
+/*    `write_pwvalid', */
+/*    `write_pwdata', */
+/*    `write_pwstrb', */
+/*    `write_pbready') */
+/*  */
 endmodule

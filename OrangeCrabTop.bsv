@@ -1,6 +1,10 @@
 import UsbByte::*;
 import GetPut::*;
 import Orange::*;
+import AXI4_Lite_Master::*;
+import AXI4_Lite_Slave::*;
+import AXI4_Lite_Types::*;
+import Connectable::*;
 
 
 interface OrangeCrab;
@@ -30,8 +34,8 @@ module top(OrangeCrab ifc);
     Reg#(Bit#(16)) rcnt <- mkReg(0);
     UsbCore usb_core <- mkUsbCore();
     GsdOrange system <- mkGsdOrange();
-    AXI4_Lite_Master_Wr#(32,32,1) wServer <- mkAXI4_Lite_Master_Wr;
-    AXI4_Lite_Master_Rd#(32,32) rServer <- mkAXI4_Lite_Master_Rd;
+    AXI4_Lite_Master_Wr#(32,32) wServer <- mkAXI4_Lite_Master_Wr(1);
+    AXI4_Lite_Master_Rd#(32,32) rServer <- mkAXI4_Lite_Master_Rd(1);
     mkConnection(wServer.fab, system.write);
     mkConnection(rServer.fab, system.read);
 
@@ -59,17 +63,17 @@ module top(OrangeCrab ifc);
         req <= addr;
         s <= Data;
 
-        if (addr[7] == 0) begin 
-            rServer.request.put(AXI4_Lite_Read_Rq_Pkg{addr: zeroExtend(addr[6:0]), prot: 0});
+        if (addr[7] == 0)
+            rServer.request.put(AXI4_Lite_Read_Rq_Pkg{addr: zeroExtend(addr[6:0]), prot: UNPRIV_SECURE_DATA});
     endrule
 
     rule get_d if (s == Data);
         let datauart <- usb_core.uart_out();
         if (req[7] == 1) begin 
-            wServer.request.put(AXI4_Lite_Write_Rq_Pkg{addr: zeroExtend(req[6:0]), data: zeroExtend(datauart), strb: -1, prot: 0});
+            wServer.request.put(AXI4_Lite_Write_Rq_Pkg{addr: zeroExtend(req[6:0]), data: zeroExtend(datauart), strb: -1, prot: UNPRIV_SECURE_DATA});
         end else 
          begin
-            let datamem_aux <- rServer.response.get()
+            let datamem_aux <- rServer.response.get();
             Bit#(32) datamem = datamem_aux.data;
             case (datauart)
             /* pack('r'): begin  */
@@ -113,7 +117,7 @@ module top(OrangeCrab ifc);
     endinterface;
 
     interface dram = system.dram;        
-    endinterface;
+
 
     /* method Action      ddram_dqs_n(Bit#(2) ddram_dqs_n); */
     /* method Action            ddram_clk_n; */

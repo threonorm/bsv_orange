@@ -25,12 +25,16 @@ def pick_color():
     change_color(int(r),int(g),int(b))
 
 def w(src, d):
-    ser.write(src)
+    x = 128 + src
+    ser.write(x.to_bytes(1,'little'))
     ser.write(d.to_bytes(1,'little'))
 
-def set(src, dst):
-    ser.write(src)
+def setColor(src, dst):
+    ser.write(src.to_bytes(1,'little'))
     ser.write(dst)
 
 
-
+w(0, 230)
+setColor(0, 'r')
+setColor(0, 'g')
+setColor(0, 'b')
