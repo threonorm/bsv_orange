@@ -24,3 +24,13 @@ def pick_color():
     r,g,b = getColor()
     change_color(int(r),int(g),int(b))
 
+def w(src, d):
+    ser.write(src)
+    ser.write(d.to_bytes(1,'little'))
+
+def set(src, dst):
+    ser.write(src)
+    ser.write(dst)
+
+
+

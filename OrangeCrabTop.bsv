@@ -3,8 +3,6 @@ import GetPut::*;
 import Orange::*;
 
 
-
-
 interface OrangeCrab;
     (* prefix = "" *)
     interface Usb usb;
@@ -21,7 +19,6 @@ interface OrangeCrab;
 
     (* prefix = "" *)
     interface DramPins dram;
-
 endinterface
 
 typedef enum {Addr, Data} State deriving (Eq,Bits);
@@ -32,9 +29,12 @@ module top(OrangeCrab ifc);
     Reg#(Bit#(8)) cnt <- mkReg(0);
     Reg#(Bit#(16)) rcnt <- mkReg(0);
     UsbCore usb_core <- mkUsbCore();
-    Clock clk <- exposeCurrentClock;
-    Reset rst <- exposeCurrentReset;
-    GsdOrange system <- mkGsdOrange(clk,rst);
+    GsdOrange system <- mkGsdOrange();
+    AXI4_Lite_Master_Wr#(32,32,1) wServer <- mkAXI4_Lite_Master_Wr;
+    AXI4_Lite_Master_Rd#(32,32) rServer <- mkAXI4_Lite_Master_Rd;
+    mkConnection(wServer.fab, system.write);
+    mkConnection(rServer.fab, system.read);
+
     Inout#(Bit#(1)) usbp = usb_core.usb_d_p; 
     Inout#(Bit#(1)) usbn = usb_core.usb_d_n; 
 
@@ -50,20 +50,27 @@ module top(OrangeCrab ifc);
         usb_core.reset(pack(rcnt<10));
     endrule
 
+    rule pull_respW;
+        let x <- wServer.response.get();
+    endrule
+
     rule get_w if (s == Addr);
         let addr <- usb_core.uart_out();
         req <= addr;
         s <= Data;
-        litedram.user_command(zeroExtend(addr[6:0]), addr[7]); 
+
+        if (addr[7] == 0) begin 
+            rServer.request.put(AXI4_Lite_Read_Rq_Pkg{addr: zeroExtend(addr[6:0]), prot: 0});
     endrule
 
     rule get_d if (s == Data);
         let datauart <- usb_core.uart_out();
-        let datamem = 0;
         if (req[7] == 1) begin 
-           litedram.write(zeroExtend(datauart), -1);
-        end else begin
-           datamem <- litedram.read();
+            wServer.request.put(AXI4_Lite_Write_Rq_Pkg{addr: zeroExtend(req[6:0]), data: zeroExtend(datauart), strb: -1, prot: 0});
+        end else 
+         begin
+            let datamem_aux <- rServer.response.get()
+            Bit#(32) datamem = datamem_aux.data;
             case (datauart)
             /* pack('r'): begin  */
             8'd114: begin 
@@ -80,7 +87,7 @@ module top(OrangeCrab ifc);
        endcase
 
        end
-       s <= Addr;
+       s <= Data;
     endrule
 
 
