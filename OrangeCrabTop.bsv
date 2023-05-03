@@ -24,12 +24,12 @@ interface DramPins;
     method Action       ddram_dqs_p(Bit#(2) ddram_dqs_p);
     (* always_ready, prefix = "" *)
     method Bit#(1)           ddram_clk_p;
-    (* always_ready,  prefix = "" *)
-    method Action           ddram_cke;
-    (* always_ready,  prefix = "" *)
-    method Action           ddram_odt;
-    (* always_ready,  prefix = "" *)
-    method Action           ddram_reset_n;
+    (* always_ready, always_enabled,  prefix = "" *)
+    method Action           ddram_cke(Bit#(1) ddram_cke);
+    (* always_ready, always_enabled, prefix = "" *)
+    method Action           ddram_odt(Bit#(1) ddram_odt);
+    (* always_ready, always_enabled, prefix = "" *)
+    method Action           ddram_reset_n(Bit#(1) ddram_reset_n);
 endinterface
 
 
@@ -78,6 +78,8 @@ module top(OrangeCrab ifc);
         litedram.wb_ctrl_sel(?);
         litedram.wb_ctrl_cti(?);
         litedram.wb_ctrl_bte(?);
+        let a = litedram.ddr_pins.ddram_clk_p;
+        litedram.ddr_pins.ddram_clk_n(~a);
     endrule
     rule reset_setup;
         cnt <= cnt + 1;
@@ -89,24 +91,32 @@ module top(OrangeCrab ifc);
         let addr <- usb_core.uart_out();
         req <= addr;
         s <= Data;
+        litedram.user_command(zeroExtend(addr[6:0]), addr[7]); 
     endrule
 
     rule get_d if (s == Data);
-        let data <- usb_core.uart_out();
-        case (req)
-        /* pack('r'): begin  */
-        8'd114: begin 
-            r <= data;
-            end
-        /* pack('g'): begin  */
-        8'd103: begin 
-            g <= data;
-            end
-        /* pack('b'): begin  */
-        8'd98: begin 
-            b <= data;
-            end
+        let datauart <- usb_core.uart_out();
+        let datamem = 0;
+        if (req[7] == 1) begin 
+           litedram.write(zeroExtend(datauart), -1);
+        end else begin
+           datamem <- litedram.read();
+            case (datauart)
+            /* pack('r'): begin  */
+            8'd114: begin 
+                r <= truncate(datamem);
+                end
+            /* pack('g'): begin  */
+            8'd103: begin 
+                g <= truncate(datamem);
+                end
+            /* pack('b'): begin  */
+            8'd98: begin 
+                b <= truncate(datamem);
+                end
        endcase
+
+       end
        s <= Addr;
     endrule
 
@@ -132,5 +142,25 @@ module top(OrangeCrab ifc);
         interface pin_usb_n = usbn;
         /* interface usb_pullup = ;  */
     endinterface;
-    interface dram = litedram.ddr_pins;
+    interface dram = interface DramPins;
+        method Bit#(13) ddram_a=litedram.ddr_pins.ddram_a;
+        method Bit#(3) ddram_ba=litedram.ddr_pins.ddram_ba;
+        method Bit#(1)          ddram_ras_n=litedram.ddr_pins.ddram_ras_n;
+        method Bit#(1)          ddram_cas_n=litedram.ddr_pins.ddram_cas_n;
+        method Bit#(1)          ddram_we_n=litedram.ddr_pins.ddram_we_n;
+        method Bit#(1)          ddram_cs_n=litedram.ddr_pins.ddram_cs_n;
+        method Bit#(2) ddram_dm=litedram.ddr_pins.ddram_dm;
+        method Action      ddram_dq(Bit#(16) i)=litedram.ddr_pins.ddram_dq(i);
+        method Action       ddram_dqs_p(Bit#(2) i);
+            litedram.ddr_pins.ddram_dqs_p(i);
+            litedram.ddr_pins.ddram_dqs_n(~i);
+        endmethod
+        method Bit#(1)           ddram_clk_p=litedram.ddr_pins.ddram_clk_p;
+        method Action           ddram_cke(Bit#(1) i)=litedram.ddr_pins.ddram_cke(i);
+        method Action           ddram_odt(Bit#(1) i)=litedram.ddr_pins.ddram_odt(i);
+        method Action           ddram_reset_n(Bit#(1) i)=litedram.ddr_pins.ddram_reset_n(i);
+    endinterface;
+
+    /* method Action      ddram_dqs_n(Bit#(2) ddram_dqs_n); */
+    /* method Action            ddram_clk_n; */
 endmodule
