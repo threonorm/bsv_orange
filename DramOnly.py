@@ -23,7 +23,7 @@ import inspect
 from migen import *
 from migen.genlib.resetsync import AsyncResetSynchronizer
 
-from litex_boards.platforms import orangecrab
+from litex_boards.platforms import gsd_orangecrab
 #from litex_boards.targets.orangecrab import _CRG
 
 from litex.build.lattice.trellis import trellis_args, trellis_argdict
@@ -38,21 +38,15 @@ from litex.soc.integration.builder import *
 from litedram.modules import MT41K64M16, MT41K128M16, MT41K256M16, MT41K512M16
 from litedram.phy import ECP5DDRPHY
 
-from litex.soc.cores.spi import SPIMaster
-from litex.soc.cores.bitbang import I2CMaster
-
 from litex.soc.doc import generate_docs
 
 
 from migen.genlib.cdc import MultiReg
 
 
-from modules.rgb import RGB
-from modules.analog import AnalogSense
 from modules.csr_cdc import CSRClockDomainWrapper
 from modules.io_block import IOPort
 
-from litex.soc.cores import spi_flash
 from litex.soc.cores.gpio import GPIOTristate, GPIOOut, GPIOIn
 
 # from valentyusb.usbcore import io as usbio
@@ -134,37 +128,9 @@ class CRG(Module):
             AsyncResetSynchronizer(self.cd_sys2x_i, ~pll.locked ),
         ]
 
-        # USB PLL
-        # if with_usb_pll:
-        #     self.clock_domains.cd_usb_12 = ClockDomain()
-        #     self.clock_domains.cd_usb_48 = ClockDomain()
-        #     usb_pll = ECP5PLL()
-        #     self.comb += usb_pll.reset.eq(~por_done)
-        #     self.submodules += usb_pll
-        #     usb_pll.register_clkin(clk48, 48e6)
-        #     usb_pll.create_clkout(self.cd_usb_48, 48e6)
-        #     usb_pll.create_clkout(self.cd_usb_12, 12e6)
-        #
-
-
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
-    # csr_map = {
-    #     "ctrl":           0,  # provided by default (optional)
-    #     "crg":            1,  # user
-    #     "identifier_mem": 4,  # provided by default (optional)
-    #     "timer0":         5,  # provided by default (optional)
-    #     "rgb":            10,
-    #     "gpio":           11,
-    #     "self_reset":     12,
-    #     "version":        14,
-    #     "lxspi":          15,
-    #     "button":         17,
-    #     "asense":         18,
-    # }
-    # csr_map.update(SoCCore.csr_map)
-    #
     mem_map = {
         # "rom":      0x00000000,  # (default shadow @0x80000000)
         # "sram":     0x10000000,  # (default shadow @0xa0000000)
@@ -189,6 +155,8 @@ class BaseSoC(SoCCore):
 
         platform.add_extension(extras)
 
+        wb_bus = wishbone.Interface()
+        self.add_wb_master(wb_bus)
         # Disconnect Serial Debug (Stub required so BIOS is kept happy)
         kwargs['uart_name']="stream"
 
@@ -231,54 +199,10 @@ class BaseSoC(SoCCore):
                 l2_cache_size           = 0,
             )
 
-        # RGB LED
-        # self.submodules.rgb = RGB(platform.request("rgb_led", 0))
-        # #self.submodules.gpio = GPIOTristateCustom(platform.request("gpio", 0))
-        #
-        # self.submodules.gpio= IOPort(platform.request("gpio",0))
-        #
-        # try:
-        #     self.submodules.button = GPIOIn(platform.request("usr_btn"))
-        # except:
-        #     ...
-        #
-        # Analog Mux
-        #self.submodules.asense = AnalogSense(platform.request("analog"))
         
         # drive PROGRAMN HIGH
         self.comb += platform.request("rst_n").eq(1)
 
-        # The litex SPI module supports memory-mapped reads, as well as a bit-banged mode
-        # for doing writes.
-        # spi_pads = platform.request("spiflash4x")
-        # self.submodules.lxspi = spi_flash.SpiFlashDualQuad(spi_pads, dummy=6, endianness="little")
-        # self.lxspi.add_clk_primitive(platform.device)
-        # self.register_mem("spiflash", self.mem_map["spiflash"], self.lxspi.bus, size=16*1024*1024)
-        #
-
-        # Attach USB to a seperate CSR bus that's decoupled from our CPU clock
-        # usb_pads = platform.request("usb")
-        # usb_iobuf = usbio.IoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
-        # self.submodules.usb0 = CSRClockDomainWrapper(usb_iobuf)
-        # self.comb += self.cpu.interrupt[self.interrupt_map['usb']].eq(self.usb0.irq)
-
-        # from litex.soc.integration.soc_core import SoCRegion
-        # self.bus.add_slave('usb',  self.usb0.bus, SoCRegion(origin=0x90000000, size=0x1000, cached=False))
-        #
-        # self.constants["FLASH_BOOT_ADDRESS"] = self.mem_map['spiflash'] + 0x00100000
-
-    # # Generate the CSR for the USB
-    # def write_usb_csr(self, directory):
-    #     csrs = self.usb0.get_csr()
-    #
-    #     from litex.soc.integration import export
-    #     from litex.build.tools import write_to_file
-    #     from litex.soc.integration.soc_core import SoCCSRRegion
-    #     os.makedirs(directory, exist_ok=True)
-    #     write_to_file(
-    #         os.path.join(directory, "csr_usb.h"),
-    #         export.get_csr_header({"usb" : SoCCSRRegion(0x90000000, 32, csrs)}, self.constants)
-    #     )
 
 # Build --------------------------------------------------------------------------------------------
 def main():
