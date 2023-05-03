@@ -35,6 +35,7 @@ from litex.soc.integration.soc_core import *
 #from litex.soc.integration.soc_sdram import *
 from litex.soc.integration.builder import *
 from litex.soc.interconnect import wishbone
+from litex.soc.interconnect.axi import axi_lite
 
 from litedram.modules import MT41K64M16, MT41K128M16, MT41K256M16, MT41K512M16
 from litedram.phy import ECP5DDRPHY
@@ -161,11 +162,11 @@ class BaseSoC(SoCCore):
 
         # SoCCore ----------------------------------------------------------------------------------
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq, **kwargs)
-        wb_bus = wishbone.Interface()
-        self.bus.add_master(name="toProc", master=wb_bus)
-        platform.add_extension(wb_bus.get_ios("wb"))
-        wb_pads = platform.request("wb")
-        self.comb += wb_bus.connect_to_pads(wb_pads, mode="slave")
+        axi_bus = axi_lite.AXILiteInterface()
+        self.bus.add_master(name="toProc", master=axi_bus)
+        platform.add_extension(axi_bus.get_ios("axi"))
+        axi_pads = platform.request("axi")
+        self.comb += axi_bus.connect_to_pads(axi_pads, mode="slave")
 
         # connect UART stream to NULL
         # self.comb += self.uart.source.ready.eq(1)
