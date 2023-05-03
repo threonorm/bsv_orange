@@ -45,7 +45,8 @@ endinterface
 import "BVI" gsd_orangecrab =
 module mkGsdOrange(GsdOrange);
     default_clock clk(clk48);
-    default_reset rst(rst_n);
+    default_reset no_reset;
+    /* default_reset rst(rst_n); */
     interface DramPins dram;
         method ddram_a ddram_a;
         method ddram_ba  ddram_ba;
@@ -152,6 +153,35 @@ module mkGsdOrange(GsdOrange);
    write_pwdata,
    write_pwstrb,
    write_pbready);
+  schedule  (dram_ddram_a,
+   dram_ddram_ba,
+   dram_ddram_ras_n,
+   dram_ddram_cas_n,
+   dram_ddram_we_n,
+   dram_ddram_cs_n,
+   dram_ddram_dm,
+   dram_ddram_clk_p,
+   read_arready,
+   read_rvalid,
+   read_rdata,
+   read_rresp,
+   write_awready,
+   write_wready,
+   write_bvalid,
+   write_bresp)
+  CF  (dram_ddram_dq,
+   dram_ddram_dqs_p,
+   read_parvalid,
+   read_paraddr,
+   read_parprot,
+   read_prready,
+   write_pawvalid,
+   write_pawaddr,
+   write_pawprot,
+   write_pwvalid,
+   write_pwdata,
+   write_pwstrb,
+   write_pbready); 
 /*   Assuming conflict. */
 /* Warning: "Orange.bsv", line 47, column 22: (P0200) */
 /*   No scheduling annotation given between methods */
