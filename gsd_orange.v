@@ -9,7 +9,7 @@
 // Filename   : gsd_orangecrab.v
 // Device     : LFE5U-25F-8MG285C
 // LiteX sha1 : 309f012d
-// Date       : 2023-05-04 00:55:23
+// Date       : 2023-05-04 08:24:17
 //------------------------------------------------------------------------------
 
 `timescale 1ns / 1ps
@@ -71,16 +71,26 @@ wire          sys2x_clk;
 wire          sys2x_i_clk;
 wire          sys2x_i_rst;
 wire          soc_crg_stop;
-wire          soc_crg_reset0;
+wire          soc_crg_reset;
 wire          soc_crg_osc_g;
 wire          soc_crg_por_done;
 reg    [23:0] soc_crg_por_count = 24'd2400000;
 wire          soc_crg_sys2x_clk_ecsout;
-wire          soc_crg_reset1;
-wire          soc_crg_locked;
-reg           soc_crg_stdby = 1'd0;
-wire          soc_crg_clkin;
-wire          soc_crg_clkout;
+wire          soc_crg_pll_reset;
+wire          soc_crg_pll_locked;
+reg           soc_crg_pll_stdby = 1'd0;
+wire          soc_crg_ecp5pll0_clkin;
+wire          soc_crg_ecp5pll0_clkout;
+wire          usb_12_clk;
+wire          usb_12_rst;
+wire          usb_48_clk;
+wire          usb_48_rst;
+wire          soc_crg_usb_pll_reset;
+wire          soc_crg_usb_pll_locked;
+reg           soc_crg_usb_pll_stdby = 1'd0;
+wire          soc_crg_ecp5pll1_clkin;
+wire          soc_crg_ecp5pll1_clkout0;
+wire          soc_crg_ecp5pll1_clkout1;
 reg           soc_basesoc_soc_rst = 1'd0;
 wire          soc_basesoc_cpu_rst;
 reg     [1:0] soc_basesoc_reset_storage = 2'd0;
@@ -176,7 +186,7 @@ reg           soc_basesoc_uart_uart_sink_first = 1'd0;
 reg           soc_basesoc_uart_uart_sink_last = 1'd0;
 reg     [7:0] soc_basesoc_uart_uart_sink_payload_data = 8'd0;
 wire          soc_basesoc_uart_uart_source_valid;
-reg           soc_basesoc_uart_uart_source_ready = 1'd0;
+wire          soc_basesoc_uart_uart_source_ready;
 wire          soc_basesoc_uart_uart_source_first;
 wire          soc_basesoc_uart_uart_source_last;
 wire    [7:0] soc_basesoc_uart_uart_source_payload_data;
@@ -2110,82 +2120,84 @@ wire   [13:0] vns_csr_interconnect_adr;
 wire          vns_csr_interconnect_we;
 wire   [31:0] vns_csr_interconnect_dat_w;
 wire   [31:0] vns_csr_interconnect_dat_r;
-wire          vns_basesoc_crg_ecp5pll;
-wire          vns_basesoc_crg_locked;
+wire          vns_basesoc_ecp5pll0_ecp5pll;
+wire          vns_basesoc_ecp5pll0_locked;
+wire          vns_basesoc_ecp5pll1_ecp5pll;
+wire          vns_basesoc_ecp5pll1_locked;
 reg     [1:0] vns_basesoc_axilitesram_state = 2'd0;
 reg     [1:0] vns_basesoc_axilitesram_next_state = 2'd0;
 reg           soc_basesoc_last_was_read_axilitesram_next_value = 1'd0;
 reg           soc_basesoc_last_was_read_axilitesram_next_value_ce = 1'd0;
-reg     [1:0] vns_basesoc_litedramcore_refresher_state = 2'd0;
-reg     [1:0] vns_basesoc_litedramcore_refresher_next_state = 2'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine0_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine0_next_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine1_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine1_next_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine2_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine2_next_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine3_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine3_next_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine4_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine4_next_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine5_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine5_next_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine6_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine6_next_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine7_state = 3'd0;
-reg     [2:0] vns_basesoc_litedramcore_bankmachine7_next_state = 3'd0;
-reg     [3:0] vns_basesoc_litedramcore_multiplexer_state = 4'd0;
-reg     [3:0] vns_basesoc_litedramcore_multiplexer_next_state = 4'd0;
-wire          vns_basesoc_litedramcore_roundrobin0_request;
-wire          vns_basesoc_litedramcore_roundrobin0_grant;
-wire          vns_basesoc_litedramcore_roundrobin0_ce;
-wire          vns_basesoc_litedramcore_roundrobin1_request;
-wire          vns_basesoc_litedramcore_roundrobin1_grant;
-wire          vns_basesoc_litedramcore_roundrobin1_ce;
-wire          vns_basesoc_litedramcore_roundrobin2_request;
-wire          vns_basesoc_litedramcore_roundrobin2_grant;
-wire          vns_basesoc_litedramcore_roundrobin2_ce;
-wire          vns_basesoc_litedramcore_roundrobin3_request;
-wire          vns_basesoc_litedramcore_roundrobin3_grant;
-wire          vns_basesoc_litedramcore_roundrobin3_ce;
-wire          vns_basesoc_litedramcore_roundrobin4_request;
-wire          vns_basesoc_litedramcore_roundrobin4_grant;
-wire          vns_basesoc_litedramcore_roundrobin4_ce;
-wire          vns_basesoc_litedramcore_roundrobin5_request;
-wire          vns_basesoc_litedramcore_roundrobin5_grant;
-wire          vns_basesoc_litedramcore_roundrobin5_ce;
-wire          vns_basesoc_litedramcore_roundrobin6_request;
-wire          vns_basesoc_litedramcore_roundrobin6_grant;
-wire          vns_basesoc_litedramcore_roundrobin6_ce;
-wire          vns_basesoc_litedramcore_roundrobin7_request;
-wire          vns_basesoc_litedramcore_roundrobin7_grant;
-wire          vns_basesoc_litedramcore_roundrobin7_ce;
-reg           vns_basesoc_litedramcore_locked0 = 1'd0;
-reg           vns_basesoc_litedramcore_locked1 = 1'd0;
-reg           vns_basesoc_litedramcore_locked2 = 1'd0;
-reg           vns_basesoc_litedramcore_locked3 = 1'd0;
-reg           vns_basesoc_litedramcore_locked4 = 1'd0;
-reg           vns_basesoc_litedramcore_locked5 = 1'd0;
-reg           vns_basesoc_litedramcore_locked6 = 1'd0;
-reg           vns_basesoc_litedramcore_locked7 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_wdata_ready0 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_wdata_ready1 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_wdata_ready2 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_wdata_ready3 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid0 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid1 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid2 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid3 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid4 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid5 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid6 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid7 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid8 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid9 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid10 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid11 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid12 = 1'd0;
-reg           vns_basesoc_litedramcore_new_master_rdata_valid13 = 1'd0;
+reg     [1:0] vns_basesoc_refresher_state = 2'd0;
+reg     [1:0] vns_basesoc_refresher_next_state = 2'd0;
+reg     [2:0] vns_basesoc_bankmachine0_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine0_next_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine1_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine1_next_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine2_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine2_next_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine3_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine3_next_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine4_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine4_next_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine5_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine5_next_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine6_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine6_next_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine7_state = 3'd0;
+reg     [2:0] vns_basesoc_bankmachine7_next_state = 3'd0;
+reg     [3:0] vns_basesoc_multiplexer_state = 4'd0;
+reg     [3:0] vns_basesoc_multiplexer_next_state = 4'd0;
+wire          vns_basesoc_roundrobin0_request;
+wire          vns_basesoc_roundrobin0_grant;
+wire          vns_basesoc_roundrobin0_ce;
+wire          vns_basesoc_roundrobin1_request;
+wire          vns_basesoc_roundrobin1_grant;
+wire          vns_basesoc_roundrobin1_ce;
+wire          vns_basesoc_roundrobin2_request;
+wire          vns_basesoc_roundrobin2_grant;
+wire          vns_basesoc_roundrobin2_ce;
+wire          vns_basesoc_roundrobin3_request;
+wire          vns_basesoc_roundrobin3_grant;
+wire          vns_basesoc_roundrobin3_ce;
+wire          vns_basesoc_roundrobin4_request;
+wire          vns_basesoc_roundrobin4_grant;
+wire          vns_basesoc_roundrobin4_ce;
+wire          vns_basesoc_roundrobin5_request;
+wire          vns_basesoc_roundrobin5_grant;
+wire          vns_basesoc_roundrobin5_ce;
+wire          vns_basesoc_roundrobin6_request;
+wire          vns_basesoc_roundrobin6_grant;
+wire          vns_basesoc_roundrobin6_ce;
+wire          vns_basesoc_roundrobin7_request;
+wire          vns_basesoc_roundrobin7_grant;
+wire          vns_basesoc_roundrobin7_ce;
+reg           vns_basesoc_locked0 = 1'd0;
+reg           vns_basesoc_locked1 = 1'd0;
+reg           vns_basesoc_locked2 = 1'd0;
+reg           vns_basesoc_locked3 = 1'd0;
+reg           vns_basesoc_locked4 = 1'd0;
+reg           vns_basesoc_locked5 = 1'd0;
+reg           vns_basesoc_locked6 = 1'd0;
+reg           vns_basesoc_locked7 = 1'd0;
+reg           vns_basesoc_new_master_wdata_ready0 = 1'd0;
+reg           vns_basesoc_new_master_wdata_ready1 = 1'd0;
+reg           vns_basesoc_new_master_wdata_ready2 = 1'd0;
+reg           vns_basesoc_new_master_wdata_ready3 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid0 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid1 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid2 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid3 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid4 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid5 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid6 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid7 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid8 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid9 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid10 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid11 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid12 = 1'd0;
+reg           vns_basesoc_new_master_rdata_valid13 = 1'd0;
 reg     [1:0] vns_basesoc_litedramwishbone2native_state = 2'd0;
 reg     [1:0] vns_basesoc_litedramwishbone2native_next_state = 2'd0;
 reg           soc_aborted_litedramwishbone2native_next_value = 1'd0;
@@ -2275,6 +2287,8 @@ reg           vns_array_muxed12 = 1'd0;
 reg           vns_array_muxed13 = 1'd0;
 wire          vns_rst10;
 wire          vns_rst11;
+wire          vns_rst12;
+wire          vns_rst13;
 reg           vns_regs0 = 1'd0;
 reg           vns_regs1 = 1'd0;
 
@@ -2301,22 +2315,38 @@ assign axi_rvalid = soc_r_valid;
 assign axi_rresp = soc_r_payload_resp;
 assign axi_rdata = soc_r_payload_data;
 assign soc_r_ready = axi_rready;
+assign soc_basesoc_uart_uart_source_ready = 1'd1;
 assign ddram_vccio = 6'd63;
 assign ddram_gnd = 1'd0;
 assign soc_crg_stop = soc_ddrphy_stop0;
-assign soc_crg_reset0 = soc_ddrphy_reset0;
+assign soc_crg_reset = soc_ddrphy_reset0;
 assign rst_n = 1'd1;
 assign soc_basesoc_bus_error = vns_socbushandler_error;
 assign por_clk = soc_crg_osc_g;
 assign soc_crg_por_done = (soc_crg_por_count == 1'd0);
 assign init_clk = soc_crg_osc_g;
-assign soc_crg_reset1 = (~soc_crg_por_done);
-assign soc_crg_clkin = clk48;
-assign sys2x_i_clk = soc_crg_clkout;
-assign soc_crg_locked = (vns_basesoc_crg_locked & (~soc_crg_reset1));
+assign soc_crg_pll_reset = (~soc_crg_por_done);
+assign soc_crg_usb_pll_reset = (~soc_crg_por_done);
+assign soc_crg_ecp5pll0_clkin = clk48;
+assign sys2x_i_clk = soc_crg_ecp5pll0_clkout;
+assign soc_crg_pll_locked = (vns_basesoc_ecp5pll0_locked & (~soc_crg_pll_reset));
+assign soc_crg_ecp5pll1_clkin = clk48;
+assign usb_48_clk = soc_crg_ecp5pll1_clkout0;
+assign usb_12_clk = soc_crg_ecp5pll1_clkout1;
+assign soc_crg_usb_pll_locked = (vns_basesoc_ecp5pll1_locked & (~soc_crg_usb_pll_reset));
 assign soc_socbushandler_r_addr = (soc_socbushandler_ar_payload_addr - 1'd0);
 assign soc_socbushandler_w_addr = (soc_socbushandler_aw_payload_addr - 1'd0);
 always @(*) begin
+    soc_wb_sdram_sel <= 4'd0;
+    soc_wb_sdram_cyc <= 1'd0;
+    soc_wb_sdram_stb <= 1'd0;
+    soc_socbushandler_r_payload_resp <= 2'd0;
+    soc_wb_sdram_we <= 1'd0;
+    soc_socbushandler_r_payload_data <= 32'd0;
+    vns_socbushandler_next_state <= 3'd0;
+    soc_socbushandler_last_ar_aw_n_next_value0 <= 1'd0;
+    soc_socbushandler_last_ar_aw_n_next_value_ce0 <= 1'd0;
+    soc_socbushandler_aw_ready <= 1'd0;
     soc_socbushandler_w_ready <= 1'd0;
     soc_socbushandler_data_next_value1 <= 32'd0;
     soc_socbushandler_data_next_value_ce1 <= 1'd0;
@@ -2326,16 +2356,6 @@ always @(*) begin
     soc_wb_sdram_adr <= 30'd0;
     soc_wb_sdram_dat_w <= 32'd0;
     soc_socbushandler_r_valid <= 1'd0;
-    soc_wb_sdram_sel <= 4'd0;
-    soc_wb_sdram_cyc <= 1'd0;
-    soc_wb_sdram_stb <= 1'd0;
-    soc_socbushandler_r_payload_resp <= 2'd0;
-    soc_socbushandler_r_payload_data <= 32'd0;
-    soc_wb_sdram_we <= 1'd0;
-    vns_socbushandler_next_state <= 3'd0;
-    soc_socbushandler_last_ar_aw_n_next_value0 <= 1'd0;
-    soc_socbushandler_last_ar_aw_n_next_value_ce0 <= 1'd0;
-    soc_socbushandler_aw_ready <= 1'd0;
     vns_socbushandler_next_state <= vns_socbushandler_state;
     case (vns_socbushandler_state)
         1'd1: begin
@@ -2564,13 +2584,13 @@ assign vns_socbushandler_error = (vns_socbushandler_wr_error | vns_socbushandler
 assign vns_socbushandler_wr_timer_done = (vns_socbushandler_wr_timer_count == 1'd0);
 assign vns_socbushandler_rd_timer_done = (vns_socbushandler_rd_timer_count == 1'd0);
 always @(*) begin
-    vns_socbushandler_b_valid <= 1'd0;
-    vns_socbushandler_fsm0_next_state <= 1'd0;
     vns_socbushandler_wr_error <= 1'd0;
+    vns_socbushandler_fsm0_next_state <= 1'd0;
     vns_socbushandler_w_ready <= 1'd0;
-    vns_socbushandler_aw_ready <= 1'd0;
     vns_socbushandler_b_payload_resp <= 2'd0;
+    vns_socbushandler_aw_ready <= 1'd0;
     vns_socbushandler_wr_timer_wait <= 1'd0;
+    vns_socbushandler_b_valid <= 1'd0;
     vns_socbushandler_aw_ready <= (((soc_basesoc_aw_ready & {1{vns_socbushandler_slave_sel0[0]}}) | (soc_socbushandler_aw_ready & {1{vns_socbushandler_slave_sel0[1]}})) | (vns_basesoc_aw_ready & {1{vns_socbushandler_slave_sel0[2]}}));
     vns_socbushandler_w_ready <= (((soc_basesoc_w_ready & {1{vns_socbushandler_slave_sel0[0]}}) | (soc_socbushandler_w_ready & {1{vns_socbushandler_slave_sel0[1]}})) | (vns_basesoc_w_ready & {1{vns_socbushandler_slave_sel0[2]}}));
     vns_socbushandler_b_valid <= (((soc_basesoc_b_valid & {1{vns_socbushandler_slave_sel0[0]}}) | (soc_socbushandler_b_valid & {1{vns_socbushandler_slave_sel0[1]}})) | (vns_basesoc_b_valid & {1{vns_socbushandler_slave_sel0[2]}}));
@@ -2596,13 +2616,13 @@ always @(*) begin
     endcase
 end
 always @(*) begin
-    vns_socbushandler_r_payload_data <= 32'd0;
     vns_socbushandler_rd_timer_wait <= 1'd0;
     vns_socbushandler_r_valid <= 1'd0;
     vns_socbushandler_rd_error <= 1'd0;
     vns_socbushandler_fsm1_next_state <= 1'd0;
     vns_socbushandler_ar_ready <= 1'd0;
     vns_socbushandler_r_payload_resp <= 2'd0;
+    vns_socbushandler_r_payload_data <= 32'd0;
     vns_socbushandler_ar_ready <= (((soc_basesoc_ar_ready & {1{vns_socbushandler_slave_sel1[0]}}) | (soc_socbushandler_ar_ready & {1{vns_socbushandler_slave_sel1[1]}})) | (vns_basesoc_ar_ready & {1{vns_socbushandler_slave_sel1[2]}}));
     vns_socbushandler_r_valid <= (((soc_basesoc_r_valid & {1{vns_socbushandler_slave_sel1[0]}}) | (soc_socbushandler_r_valid & {1{vns_socbushandler_slave_sel1[1]}})) | (vns_basesoc_r_valid & {1{vns_socbushandler_slave_sel1[2]}}));
     vns_socbushandler_r_payload_resp <= (((soc_basesoc_r_payload_resp & {2{vns_socbushandler_slave_sel1[0]}}) | (soc_socbushandler_r_payload_resp & {2{vns_socbushandler_slave_sel1[1]}})) | (vns_basesoc_r_payload_resp & {2{vns_socbushandler_slave_sel1[2]}}));
@@ -2656,20 +2676,20 @@ always @(*) begin
     soc_basesoc_we[3] <= ((soc_basesoc_w_valid & soc_basesoc_w_ready) & soc_basesoc_w_payload_strb[3]);
 end
 always @(*) begin
-    soc_basesoc_last_was_read_axilitesram_next_value <= 1'd0;
-    soc_basesoc_last_was_read_axilitesram_next_value_ce <= 1'd0;
-    soc_basesoc_b_payload_resp <= 2'd0;
-    soc_basesoc_aw_ready <= 1'd0;
     soc_basesoc_ar_ready <= 1'd0;
-    soc_basesoc_b_valid <= 1'd0;
     soc_basesoc_w_ready <= 1'd0;
     soc_basesoc_r_valid <= 1'd0;
-    vns_basesoc_axilitesram_next_state <= 2'd0;
+    soc_basesoc_last_was_read_axilitesram_next_value <= 1'd0;
+    soc_basesoc_last_was_read_axilitesram_next_value_ce <= 1'd0;
     soc_basesoc_do_read <= 1'd0;
     soc_basesoc_r_payload_resp <= 2'd0;
     soc_basesoc_do_write <= 1'd0;
     soc_basesoc_r_payload_data <= 32'd0;
+    soc_basesoc_b_valid <= 1'd0;
     soc_basesoc_adr <= 11'd0;
+    soc_basesoc_b_payload_resp <= 2'd0;
+    soc_basesoc_aw_ready <= 1'd0;
+    vns_basesoc_axilitesram_next_state <= 2'd0;
     vns_basesoc_axilitesram_next_state <= vns_basesoc_axilitesram_state;
     case (vns_basesoc_axilitesram_state)
         1'd1: begin
@@ -3479,6 +3499,11 @@ assign soc_sdram_slave_p1_rddata_en = soc_sdram_dfi_p1_rddata_en;
 assign soc_sdram_dfi_p1_rddata = soc_sdram_slave_p1_rddata;
 assign soc_sdram_dfi_p1_rddata_valid = soc_sdram_slave_p1_rddata_valid;
 always @(*) begin
+    soc_sdram_ext_dfi_p1_rddata <= 64'd0;
+    soc_sdram_ext_dfi_p1_rddata_valid <= 1'd0;
+    soc_sdram_slave_p0_rddata <= 64'd0;
+    soc_sdram_slave_p0_rddata_valid <= 1'd0;
+    soc_sdram_csr_dfi_p0_rddata <= 64'd0;
     soc_sdram_csr_dfi_p0_rddata_valid <= 1'd0;
     soc_sdram_slave_p1_rddata <= 64'd0;
     soc_sdram_slave_p1_rddata_valid <= 1'd0;
@@ -3514,11 +3539,6 @@ always @(*) begin
     soc_sdram_master_p1_wrdata_en <= 1'd0;
     soc_sdram_master_p1_wrdata_mask <= 8'd0;
     soc_sdram_master_p1_rddata_en <= 1'd0;
-    soc_sdram_ext_dfi_p1_rddata <= 64'd0;
-    soc_sdram_ext_dfi_p1_rddata_valid <= 1'd0;
-    soc_sdram_slave_p0_rddata <= 64'd0;
-    soc_sdram_slave_p0_rddata_valid <= 1'd0;
-    soc_sdram_csr_dfi_p0_rddata <= 64'd0;
     if (soc_sdram_sel) begin
         if (soc_sdram_ext_dfi_sel) begin
             soc_sdram_master_p0_address <= soc_sdram_ext_dfi_p0_address;
@@ -3629,10 +3649,10 @@ assign soc_sdram_csr_dfi_p1_odt = soc_sdram_odt;
 assign soc_sdram_csr_dfi_p0_reset_n = soc_sdram_reset_n;
 assign soc_sdram_csr_dfi_p1_reset_n = soc_sdram_reset_n;
 always @(*) begin
+    soc_sdram_csr_dfi_p0_cas_n <= 1'd1;
     soc_sdram_csr_dfi_p0_cs_n <= 1'd1;
     soc_sdram_csr_dfi_p0_ras_n <= 1'd1;
     soc_sdram_csr_dfi_p0_we_n <= 1'd1;
-    soc_sdram_csr_dfi_p0_cas_n <= 1'd1;
     if (soc_sdram_phaseinjector0_command_issue_re) begin
         soc_sdram_csr_dfi_p0_cs_n <= {1{(~soc_sdram_phaseinjector0_csrfield_cs)}};
         soc_sdram_csr_dfi_p0_we_n <= (~soc_sdram_phaseinjector0_csrfield_we);
@@ -3652,10 +3672,10 @@ assign soc_sdram_csr_dfi_p0_rddata_en = (soc_sdram_phaseinjector0_command_issue_
 assign soc_sdram_csr_dfi_p0_wrdata = soc_sdram_phaseinjector0_wrdata_storage;
 assign soc_sdram_csr_dfi_p0_wrdata_mask = 1'd0;
 always @(*) begin
+    soc_sdram_csr_dfi_p1_cas_n <= 1'd1;
     soc_sdram_csr_dfi_p1_cs_n <= 1'd1;
     soc_sdram_csr_dfi_p1_ras_n <= 1'd1;
     soc_sdram_csr_dfi_p1_we_n <= 1'd1;
-    soc_sdram_csr_dfi_p1_cas_n <= 1'd1;
     if (soc_sdram_phaseinjector1_command_issue_re) begin
         soc_sdram_csr_dfi_p1_cs_n <= {1{(~soc_sdram_phaseinjector1_csrfield_cs)}};
         soc_sdram_csr_dfi_p1_we_n <= (~soc_sdram_phaseinjector1_csrfield_we);
@@ -3744,18 +3764,18 @@ assign soc_sdram_zqcs_timer_done1 = (soc_sdram_zqcs_timer_count1 == 1'd0);
 assign soc_sdram_zqcs_timer_done0 = soc_sdram_zqcs_timer_done1;
 assign soc_sdram_zqcs_timer_count0 = soc_sdram_zqcs_timer_count1;
 always @(*) begin
-    soc_sdram_cmd_valid <= 1'd0;
-    vns_basesoc_litedramcore_refresher_next_state <= 2'd0;
     soc_sdram_zqcs_executer_start <= 1'd0;
     soc_sdram_cmd_last <= 1'd0;
     soc_sdram_sequencer_start0 <= 1'd0;
-    vns_basesoc_litedramcore_refresher_next_state <= vns_basesoc_litedramcore_refresher_state;
-    case (vns_basesoc_litedramcore_refresher_state)
+    soc_sdram_cmd_valid <= 1'd0;
+    vns_basesoc_refresher_next_state <= 2'd0;
+    vns_basesoc_refresher_next_state <= vns_basesoc_refresher_state;
+    case (vns_basesoc_refresher_state)
         1'd1: begin
             soc_sdram_cmd_valid <= 1'd1;
             if (soc_sdram_cmd_ready) begin
                 soc_sdram_sequencer_start0 <= 1'd1;
-                vns_basesoc_litedramcore_refresher_next_state <= 2'd2;
+                vns_basesoc_refresher_next_state <= 2'd2;
             end
         end
         2'd2: begin
@@ -3763,11 +3783,11 @@ always @(*) begin
             if (soc_sdram_sequencer_done0) begin
                 if (soc_sdram_wants_zqcs) begin
                     soc_sdram_zqcs_executer_start <= 1'd1;
-                    vns_basesoc_litedramcore_refresher_next_state <= 2'd3;
+                    vns_basesoc_refresher_next_state <= 2'd3;
                 end else begin
                     soc_sdram_cmd_valid <= 1'd0;
                     soc_sdram_cmd_last <= 1'd1;
-                    vns_basesoc_litedramcore_refresher_next_state <= 1'd0;
+                    vns_basesoc_refresher_next_state <= 1'd0;
                 end
             end
         end
@@ -3776,13 +3796,13 @@ always @(*) begin
             if (soc_sdram_zqcs_executer_done) begin
                 soc_sdram_cmd_valid <= 1'd0;
                 soc_sdram_cmd_last <= 1'd1;
-                vns_basesoc_litedramcore_refresher_next_state <= 1'd0;
+                vns_basesoc_refresher_next_state <= 1'd0;
             end
         end
         default: begin
             if (1'd1) begin
                 if (soc_sdram_wants_refresh) begin
-                    vns_basesoc_litedramcore_refresher_next_state <= 1'd1;
+                    vns_basesoc_refresher_next_state <= 1'd1;
                 end
             end
         end
@@ -3864,8 +3884,6 @@ assign soc_sdram_bankmachine0_source_source_last = soc_sdram_bankmachine0_pipe_v
 assign soc_sdram_bankmachine0_source_source_payload_we = soc_sdram_bankmachine0_pipe_valid_source_payload_we;
 assign soc_sdram_bankmachine0_source_source_payload_addr = soc_sdram_bankmachine0_pipe_valid_source_payload_addr;
 always @(*) begin
-    soc_sdram_bankmachine0_row_col_n_addr_sel <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine0_next_state <= 3'd0;
     soc_sdram_bankmachine0_cmd_payload_cas <= 1'd0;
     soc_sdram_bankmachine0_cmd_payload_ras <= 1'd0;
     soc_sdram_bankmachine0_cmd_payload_we <= 1'd0;
@@ -3874,17 +3892,19 @@ always @(*) begin
     soc_sdram_bankmachine0_cmd_payload_is_write <= 1'd0;
     soc_sdram_bankmachine0_req_wdata_ready <= 1'd0;
     soc_sdram_bankmachine0_req_rdata_valid <= 1'd0;
+    vns_basesoc_bankmachine0_next_state <= 3'd0;
     soc_sdram_bankmachine0_refresh_gnt <= 1'd0;
     soc_sdram_bankmachine0_row_open <= 1'd0;
     soc_sdram_bankmachine0_cmd_valid <= 1'd0;
     soc_sdram_bankmachine0_row_close <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine0_next_state <= vns_basesoc_litedramcore_bankmachine0_state;
-    case (vns_basesoc_litedramcore_bankmachine0_state)
+    soc_sdram_bankmachine0_row_col_n_addr_sel <= 1'd0;
+    vns_basesoc_bankmachine0_next_state <= vns_basesoc_bankmachine0_state;
+    case (vns_basesoc_bankmachine0_state)
         1'd1: begin
             if ((soc_sdram_bankmachine0_twtpcon_ready & soc_sdram_bankmachine0_trascon_ready)) begin
                 soc_sdram_bankmachine0_cmd_valid <= 1'd1;
                 if (soc_sdram_bankmachine0_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine0_next_state <= 3'd5;
+                    vns_basesoc_bankmachine0_next_state <= 3'd5;
                 end
                 soc_sdram_bankmachine0_cmd_payload_ras <= 1'd1;
                 soc_sdram_bankmachine0_cmd_payload_we <= 1'd1;
@@ -3894,7 +3914,7 @@ always @(*) begin
         end
         2'd2: begin
             if ((soc_sdram_bankmachine0_twtpcon_ready & soc_sdram_bankmachine0_trascon_ready)) begin
-                vns_basesoc_litedramcore_bankmachine0_next_state <= 3'd5;
+                vns_basesoc_bankmachine0_next_state <= 3'd5;
             end
             soc_sdram_bankmachine0_row_close <= 1'd1;
         end
@@ -3905,7 +3925,7 @@ always @(*) begin
                 soc_sdram_bankmachine0_cmd_valid <= 1'd1;
                 soc_sdram_bankmachine0_cmd_payload_is_cmd <= 1'd1;
                 if (soc_sdram_bankmachine0_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine0_next_state <= 3'd6;
+                    vns_basesoc_bankmachine0_next_state <= 3'd6;
                 end
                 soc_sdram_bankmachine0_cmd_payload_ras <= 1'd1;
             end
@@ -3917,18 +3937,18 @@ always @(*) begin
             soc_sdram_bankmachine0_row_close <= 1'd1;
             soc_sdram_bankmachine0_cmd_payload_is_cmd <= 1'd1;
             if ((~soc_sdram_bankmachine0_refresh_req)) begin
-                vns_basesoc_litedramcore_bankmachine0_next_state <= 1'd0;
+                vns_basesoc_bankmachine0_next_state <= 1'd0;
             end
         end
         3'd5: begin
-            vns_basesoc_litedramcore_bankmachine0_next_state <= 2'd3;
+            vns_basesoc_bankmachine0_next_state <= 2'd3;
         end
         3'd6: begin
-            vns_basesoc_litedramcore_bankmachine0_next_state <= 1'd0;
+            vns_basesoc_bankmachine0_next_state <= 1'd0;
         end
         default: begin
             if (soc_sdram_bankmachine0_refresh_req) begin
-                vns_basesoc_litedramcore_bankmachine0_next_state <= 3'd4;
+                vns_basesoc_bankmachine0_next_state <= 3'd4;
             end else begin
                 if (soc_sdram_bankmachine0_source_source_valid) begin
                     if (soc_sdram_bankmachine0_row_opened) begin
@@ -3944,13 +3964,13 @@ always @(*) begin
                             end
                             soc_sdram_bankmachine0_cmd_payload_cas <= 1'd1;
                             if ((soc_sdram_bankmachine0_cmd_ready & soc_sdram_bankmachine0_auto_precharge)) begin
-                                vns_basesoc_litedramcore_bankmachine0_next_state <= 2'd2;
+                                vns_basesoc_bankmachine0_next_state <= 2'd2;
                             end
                         end else begin
-                            vns_basesoc_litedramcore_bankmachine0_next_state <= 1'd1;
+                            vns_basesoc_bankmachine0_next_state <= 1'd1;
                         end
                     end else begin
-                        vns_basesoc_litedramcore_bankmachine0_next_state <= 2'd3;
+                        vns_basesoc_bankmachine0_next_state <= 2'd3;
                     end
                 end
             end
@@ -4033,27 +4053,27 @@ assign soc_sdram_bankmachine1_source_source_last = soc_sdram_bankmachine1_pipe_v
 assign soc_sdram_bankmachine1_source_source_payload_we = soc_sdram_bankmachine1_pipe_valid_source_payload_we;
 assign soc_sdram_bankmachine1_source_source_payload_addr = soc_sdram_bankmachine1_pipe_valid_source_payload_addr;
 always @(*) begin
-    soc_sdram_bankmachine1_cmd_payload_ras <= 1'd0;
-    soc_sdram_bankmachine1_cmd_payload_we <= 1'd0;
-    soc_sdram_bankmachine1_cmd_payload_is_cmd <= 1'd0;
     soc_sdram_bankmachine1_cmd_payload_is_read <= 1'd0;
     soc_sdram_bankmachine1_cmd_payload_is_write <= 1'd0;
     soc_sdram_bankmachine1_req_wdata_ready <= 1'd0;
     soc_sdram_bankmachine1_req_rdata_valid <= 1'd0;
     soc_sdram_bankmachine1_refresh_gnt <= 1'd0;
-    soc_sdram_bankmachine1_row_open <= 1'd0;
+    vns_basesoc_bankmachine1_next_state <= 3'd0;
     soc_sdram_bankmachine1_cmd_valid <= 1'd0;
     soc_sdram_bankmachine1_row_close <= 1'd0;
+    soc_sdram_bankmachine1_row_open <= 1'd0;
     soc_sdram_bankmachine1_row_col_n_addr_sel <= 1'd0;
     soc_sdram_bankmachine1_cmd_payload_cas <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine1_next_state <= 3'd0;
-    vns_basesoc_litedramcore_bankmachine1_next_state <= vns_basesoc_litedramcore_bankmachine1_state;
-    case (vns_basesoc_litedramcore_bankmachine1_state)
+    soc_sdram_bankmachine1_cmd_payload_ras <= 1'd0;
+    soc_sdram_bankmachine1_cmd_payload_we <= 1'd0;
+    soc_sdram_bankmachine1_cmd_payload_is_cmd <= 1'd0;
+    vns_basesoc_bankmachine1_next_state <= vns_basesoc_bankmachine1_state;
+    case (vns_basesoc_bankmachine1_state)
         1'd1: begin
             if ((soc_sdram_bankmachine1_twtpcon_ready & soc_sdram_bankmachine1_trascon_ready)) begin
                 soc_sdram_bankmachine1_cmd_valid <= 1'd1;
                 if (soc_sdram_bankmachine1_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine1_next_state <= 3'd5;
+                    vns_basesoc_bankmachine1_next_state <= 3'd5;
                 end
                 soc_sdram_bankmachine1_cmd_payload_ras <= 1'd1;
                 soc_sdram_bankmachine1_cmd_payload_we <= 1'd1;
@@ -4063,7 +4083,7 @@ always @(*) begin
         end
         2'd2: begin
             if ((soc_sdram_bankmachine1_twtpcon_ready & soc_sdram_bankmachine1_trascon_ready)) begin
-                vns_basesoc_litedramcore_bankmachine1_next_state <= 3'd5;
+                vns_basesoc_bankmachine1_next_state <= 3'd5;
             end
             soc_sdram_bankmachine1_row_close <= 1'd1;
         end
@@ -4074,7 +4094,7 @@ always @(*) begin
                 soc_sdram_bankmachine1_cmd_valid <= 1'd1;
                 soc_sdram_bankmachine1_cmd_payload_is_cmd <= 1'd1;
                 if (soc_sdram_bankmachine1_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine1_next_state <= 3'd6;
+                    vns_basesoc_bankmachine1_next_state <= 3'd6;
                 end
                 soc_sdram_bankmachine1_cmd_payload_ras <= 1'd1;
             end
@@ -4086,18 +4106,18 @@ always @(*) begin
             soc_sdram_bankmachine1_row_close <= 1'd1;
             soc_sdram_bankmachine1_cmd_payload_is_cmd <= 1'd1;
             if ((~soc_sdram_bankmachine1_refresh_req)) begin
-                vns_basesoc_litedramcore_bankmachine1_next_state <= 1'd0;
+                vns_basesoc_bankmachine1_next_state <= 1'd0;
             end
         end
         3'd5: begin
-            vns_basesoc_litedramcore_bankmachine1_next_state <= 2'd3;
+            vns_basesoc_bankmachine1_next_state <= 2'd3;
         end
         3'd6: begin
-            vns_basesoc_litedramcore_bankmachine1_next_state <= 1'd0;
+            vns_basesoc_bankmachine1_next_state <= 1'd0;
         end
         default: begin
             if (soc_sdram_bankmachine1_refresh_req) begin
-                vns_basesoc_litedramcore_bankmachine1_next_state <= 3'd4;
+                vns_basesoc_bankmachine1_next_state <= 3'd4;
             end else begin
                 if (soc_sdram_bankmachine1_source_source_valid) begin
                     if (soc_sdram_bankmachine1_row_opened) begin
@@ -4113,13 +4133,13 @@ always @(*) begin
                             end
                             soc_sdram_bankmachine1_cmd_payload_cas <= 1'd1;
                             if ((soc_sdram_bankmachine1_cmd_ready & soc_sdram_bankmachine1_auto_precharge)) begin
-                                vns_basesoc_litedramcore_bankmachine1_next_state <= 2'd2;
+                                vns_basesoc_bankmachine1_next_state <= 2'd2;
                             end
                         end else begin
-                            vns_basesoc_litedramcore_bankmachine1_next_state <= 1'd1;
+                            vns_basesoc_bankmachine1_next_state <= 1'd1;
                         end
                     end else begin
-                        vns_basesoc_litedramcore_bankmachine1_next_state <= 2'd3;
+                        vns_basesoc_bankmachine1_next_state <= 2'd3;
                     end
                 end
             end
@@ -4202,27 +4222,27 @@ assign soc_sdram_bankmachine2_source_source_last = soc_sdram_bankmachine2_pipe_v
 assign soc_sdram_bankmachine2_source_source_payload_we = soc_sdram_bankmachine2_pipe_valid_source_payload_we;
 assign soc_sdram_bankmachine2_source_source_payload_addr = soc_sdram_bankmachine2_pipe_valid_source_payload_addr;
 always @(*) begin
-    soc_sdram_bankmachine2_cmd_payload_is_write <= 1'd0;
-    soc_sdram_bankmachine2_req_wdata_ready <= 1'd0;
-    soc_sdram_bankmachine2_req_rdata_valid <= 1'd0;
     soc_sdram_bankmachine2_refresh_gnt <= 1'd0;
     soc_sdram_bankmachine2_row_open <= 1'd0;
     soc_sdram_bankmachine2_cmd_valid <= 1'd0;
     soc_sdram_bankmachine2_row_close <= 1'd0;
+    vns_basesoc_bankmachine2_next_state <= 3'd0;
     soc_sdram_bankmachine2_row_col_n_addr_sel <= 1'd0;
     soc_sdram_bankmachine2_cmd_payload_cas <= 1'd0;
     soc_sdram_bankmachine2_cmd_payload_ras <= 1'd0;
     soc_sdram_bankmachine2_cmd_payload_we <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine2_next_state <= 3'd0;
     soc_sdram_bankmachine2_cmd_payload_is_cmd <= 1'd0;
     soc_sdram_bankmachine2_cmd_payload_is_read <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine2_next_state <= vns_basesoc_litedramcore_bankmachine2_state;
-    case (vns_basesoc_litedramcore_bankmachine2_state)
+    soc_sdram_bankmachine2_cmd_payload_is_write <= 1'd0;
+    soc_sdram_bankmachine2_req_wdata_ready <= 1'd0;
+    soc_sdram_bankmachine2_req_rdata_valid <= 1'd0;
+    vns_basesoc_bankmachine2_next_state <= vns_basesoc_bankmachine2_state;
+    case (vns_basesoc_bankmachine2_state)
         1'd1: begin
             if ((soc_sdram_bankmachine2_twtpcon_ready & soc_sdram_bankmachine2_trascon_ready)) begin
                 soc_sdram_bankmachine2_cmd_valid <= 1'd1;
                 if (soc_sdram_bankmachine2_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine2_next_state <= 3'd5;
+                    vns_basesoc_bankmachine2_next_state <= 3'd5;
                 end
                 soc_sdram_bankmachine2_cmd_payload_ras <= 1'd1;
                 soc_sdram_bankmachine2_cmd_payload_we <= 1'd1;
@@ -4232,7 +4252,7 @@ always @(*) begin
         end
         2'd2: begin
             if ((soc_sdram_bankmachine2_twtpcon_ready & soc_sdram_bankmachine2_trascon_ready)) begin
-                vns_basesoc_litedramcore_bankmachine2_next_state <= 3'd5;
+                vns_basesoc_bankmachine2_next_state <= 3'd5;
             end
             soc_sdram_bankmachine2_row_close <= 1'd1;
         end
@@ -4243,7 +4263,7 @@ always @(*) begin
                 soc_sdram_bankmachine2_cmd_valid <= 1'd1;
                 soc_sdram_bankmachine2_cmd_payload_is_cmd <= 1'd1;
                 if (soc_sdram_bankmachine2_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine2_next_state <= 3'd6;
+                    vns_basesoc_bankmachine2_next_state <= 3'd6;
                 end
                 soc_sdram_bankmachine2_cmd_payload_ras <= 1'd1;
             end
@@ -4255,18 +4275,18 @@ always @(*) begin
             soc_sdram_bankmachine2_row_close <= 1'd1;
             soc_sdram_bankmachine2_cmd_payload_is_cmd <= 1'd1;
             if ((~soc_sdram_bankmachine2_refresh_req)) begin
-                vns_basesoc_litedramcore_bankmachine2_next_state <= 1'd0;
+                vns_basesoc_bankmachine2_next_state <= 1'd0;
             end
         end
         3'd5: begin
-            vns_basesoc_litedramcore_bankmachine2_next_state <= 2'd3;
+            vns_basesoc_bankmachine2_next_state <= 2'd3;
         end
         3'd6: begin
-            vns_basesoc_litedramcore_bankmachine2_next_state <= 1'd0;
+            vns_basesoc_bankmachine2_next_state <= 1'd0;
         end
         default: begin
             if (soc_sdram_bankmachine2_refresh_req) begin
-                vns_basesoc_litedramcore_bankmachine2_next_state <= 3'd4;
+                vns_basesoc_bankmachine2_next_state <= 3'd4;
             end else begin
                 if (soc_sdram_bankmachine2_source_source_valid) begin
                     if (soc_sdram_bankmachine2_row_opened) begin
@@ -4282,13 +4302,13 @@ always @(*) begin
                             end
                             soc_sdram_bankmachine2_cmd_payload_cas <= 1'd1;
                             if ((soc_sdram_bankmachine2_cmd_ready & soc_sdram_bankmachine2_auto_precharge)) begin
-                                vns_basesoc_litedramcore_bankmachine2_next_state <= 2'd2;
+                                vns_basesoc_bankmachine2_next_state <= 2'd2;
                             end
                         end else begin
-                            vns_basesoc_litedramcore_bankmachine2_next_state <= 1'd1;
+                            vns_basesoc_bankmachine2_next_state <= 1'd1;
                         end
                     end else begin
-                        vns_basesoc_litedramcore_bankmachine2_next_state <= 2'd3;
+                        vns_basesoc_bankmachine2_next_state <= 2'd3;
                     end
                 end
             end
@@ -4371,27 +4391,27 @@ assign soc_sdram_bankmachine3_source_source_last = soc_sdram_bankmachine3_pipe_v
 assign soc_sdram_bankmachine3_source_source_payload_we = soc_sdram_bankmachine3_pipe_valid_source_payload_we;
 assign soc_sdram_bankmachine3_source_source_payload_addr = soc_sdram_bankmachine3_pipe_valid_source_payload_addr;
 always @(*) begin
-    soc_sdram_bankmachine3_refresh_gnt <= 1'd0;
-    soc_sdram_bankmachine3_row_open <= 1'd0;
-    soc_sdram_bankmachine3_cmd_valid <= 1'd0;
-    soc_sdram_bankmachine3_row_close <= 1'd0;
+    vns_basesoc_bankmachine3_next_state <= 3'd0;
     soc_sdram_bankmachine3_row_col_n_addr_sel <= 1'd0;
     soc_sdram_bankmachine3_cmd_payload_cas <= 1'd0;
     soc_sdram_bankmachine3_cmd_payload_ras <= 1'd0;
     soc_sdram_bankmachine3_cmd_payload_we <= 1'd0;
     soc_sdram_bankmachine3_cmd_payload_is_cmd <= 1'd0;
     soc_sdram_bankmachine3_cmd_payload_is_read <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine3_next_state <= 3'd0;
     soc_sdram_bankmachine3_cmd_payload_is_write <= 1'd0;
     soc_sdram_bankmachine3_req_wdata_ready <= 1'd0;
     soc_sdram_bankmachine3_req_rdata_valid <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine3_next_state <= vns_basesoc_litedramcore_bankmachine3_state;
-    case (vns_basesoc_litedramcore_bankmachine3_state)
+    soc_sdram_bankmachine3_refresh_gnt <= 1'd0;
+    soc_sdram_bankmachine3_row_open <= 1'd0;
+    soc_sdram_bankmachine3_cmd_valid <= 1'd0;
+    soc_sdram_bankmachine3_row_close <= 1'd0;
+    vns_basesoc_bankmachine3_next_state <= vns_basesoc_bankmachine3_state;
+    case (vns_basesoc_bankmachine3_state)
         1'd1: begin
             if ((soc_sdram_bankmachine3_twtpcon_ready & soc_sdram_bankmachine3_trascon_ready)) begin
                 soc_sdram_bankmachine3_cmd_valid <= 1'd1;
                 if (soc_sdram_bankmachine3_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine3_next_state <= 3'd5;
+                    vns_basesoc_bankmachine3_next_state <= 3'd5;
                 end
                 soc_sdram_bankmachine3_cmd_payload_ras <= 1'd1;
                 soc_sdram_bankmachine3_cmd_payload_we <= 1'd1;
@@ -4401,7 +4421,7 @@ always @(*) begin
         end
         2'd2: begin
             if ((soc_sdram_bankmachine3_twtpcon_ready & soc_sdram_bankmachine3_trascon_ready)) begin
-                vns_basesoc_litedramcore_bankmachine3_next_state <= 3'd5;
+                vns_basesoc_bankmachine3_next_state <= 3'd5;
             end
             soc_sdram_bankmachine3_row_close <= 1'd1;
         end
@@ -4412,7 +4432,7 @@ always @(*) begin
                 soc_sdram_bankmachine3_cmd_valid <= 1'd1;
                 soc_sdram_bankmachine3_cmd_payload_is_cmd <= 1'd1;
                 if (soc_sdram_bankmachine3_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine3_next_state <= 3'd6;
+                    vns_basesoc_bankmachine3_next_state <= 3'd6;
                 end
                 soc_sdram_bankmachine3_cmd_payload_ras <= 1'd1;
             end
@@ -4424,18 +4444,18 @@ always @(*) begin
             soc_sdram_bankmachine3_row_close <= 1'd1;
             soc_sdram_bankmachine3_cmd_payload_is_cmd <= 1'd1;
             if ((~soc_sdram_bankmachine3_refresh_req)) begin
-                vns_basesoc_litedramcore_bankmachine3_next_state <= 1'd0;
+                vns_basesoc_bankmachine3_next_state <= 1'd0;
             end
         end
         3'd5: begin
-            vns_basesoc_litedramcore_bankmachine3_next_state <= 2'd3;
+            vns_basesoc_bankmachine3_next_state <= 2'd3;
         end
         3'd6: begin
-            vns_basesoc_litedramcore_bankmachine3_next_state <= 1'd0;
+            vns_basesoc_bankmachine3_next_state <= 1'd0;
         end
         default: begin
             if (soc_sdram_bankmachine3_refresh_req) begin
-                vns_basesoc_litedramcore_bankmachine3_next_state <= 3'd4;
+                vns_basesoc_bankmachine3_next_state <= 3'd4;
             end else begin
                 if (soc_sdram_bankmachine3_source_source_valid) begin
                     if (soc_sdram_bankmachine3_row_opened) begin
@@ -4451,13 +4471,13 @@ always @(*) begin
                             end
                             soc_sdram_bankmachine3_cmd_payload_cas <= 1'd1;
                             if ((soc_sdram_bankmachine3_cmd_ready & soc_sdram_bankmachine3_auto_precharge)) begin
-                                vns_basesoc_litedramcore_bankmachine3_next_state <= 2'd2;
+                                vns_basesoc_bankmachine3_next_state <= 2'd2;
                             end
                         end else begin
-                            vns_basesoc_litedramcore_bankmachine3_next_state <= 1'd1;
+                            vns_basesoc_bankmachine3_next_state <= 1'd1;
                         end
                     end else begin
-                        vns_basesoc_litedramcore_bankmachine3_next_state <= 2'd3;
+                        vns_basesoc_bankmachine3_next_state <= 2'd3;
                     end
                 end
             end
@@ -4540,7 +4560,6 @@ assign soc_sdram_bankmachine4_source_source_last = soc_sdram_bankmachine4_pipe_v
 assign soc_sdram_bankmachine4_source_source_payload_we = soc_sdram_bankmachine4_pipe_valid_source_payload_we;
 assign soc_sdram_bankmachine4_source_source_payload_addr = soc_sdram_bankmachine4_pipe_valid_source_payload_addr;
 always @(*) begin
-    soc_sdram_bankmachine4_row_col_n_addr_sel <= 1'd0;
     soc_sdram_bankmachine4_cmd_payload_cas <= 1'd0;
     soc_sdram_bankmachine4_cmd_payload_ras <= 1'd0;
     soc_sdram_bankmachine4_cmd_payload_we <= 1'd0;
@@ -4548,19 +4567,20 @@ always @(*) begin
     soc_sdram_bankmachine4_cmd_payload_is_read <= 1'd0;
     soc_sdram_bankmachine4_cmd_payload_is_write <= 1'd0;
     soc_sdram_bankmachine4_req_wdata_ready <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine4_next_state <= 3'd0;
     soc_sdram_bankmachine4_req_rdata_valid <= 1'd0;
     soc_sdram_bankmachine4_refresh_gnt <= 1'd0;
     soc_sdram_bankmachine4_row_open <= 1'd0;
     soc_sdram_bankmachine4_cmd_valid <= 1'd0;
     soc_sdram_bankmachine4_row_close <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine4_next_state <= vns_basesoc_litedramcore_bankmachine4_state;
-    case (vns_basesoc_litedramcore_bankmachine4_state)
+    soc_sdram_bankmachine4_row_col_n_addr_sel <= 1'd0;
+    vns_basesoc_bankmachine4_next_state <= 3'd0;
+    vns_basesoc_bankmachine4_next_state <= vns_basesoc_bankmachine4_state;
+    case (vns_basesoc_bankmachine4_state)
         1'd1: begin
             if ((soc_sdram_bankmachine4_twtpcon_ready & soc_sdram_bankmachine4_trascon_ready)) begin
                 soc_sdram_bankmachine4_cmd_valid <= 1'd1;
                 if (soc_sdram_bankmachine4_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine4_next_state <= 3'd5;
+                    vns_basesoc_bankmachine4_next_state <= 3'd5;
                 end
                 soc_sdram_bankmachine4_cmd_payload_ras <= 1'd1;
                 soc_sdram_bankmachine4_cmd_payload_we <= 1'd1;
@@ -4570,7 +4590,7 @@ always @(*) begin
         end
         2'd2: begin
             if ((soc_sdram_bankmachine4_twtpcon_ready & soc_sdram_bankmachine4_trascon_ready)) begin
-                vns_basesoc_litedramcore_bankmachine4_next_state <= 3'd5;
+                vns_basesoc_bankmachine4_next_state <= 3'd5;
             end
             soc_sdram_bankmachine4_row_close <= 1'd1;
         end
@@ -4581,7 +4601,7 @@ always @(*) begin
                 soc_sdram_bankmachine4_cmd_valid <= 1'd1;
                 soc_sdram_bankmachine4_cmd_payload_is_cmd <= 1'd1;
                 if (soc_sdram_bankmachine4_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine4_next_state <= 3'd6;
+                    vns_basesoc_bankmachine4_next_state <= 3'd6;
                 end
                 soc_sdram_bankmachine4_cmd_payload_ras <= 1'd1;
             end
@@ -4593,18 +4613,18 @@ always @(*) begin
             soc_sdram_bankmachine4_row_close <= 1'd1;
             soc_sdram_bankmachine4_cmd_payload_is_cmd <= 1'd1;
             if ((~soc_sdram_bankmachine4_refresh_req)) begin
-                vns_basesoc_litedramcore_bankmachine4_next_state <= 1'd0;
+                vns_basesoc_bankmachine4_next_state <= 1'd0;
             end
         end
         3'd5: begin
-            vns_basesoc_litedramcore_bankmachine4_next_state <= 2'd3;
+            vns_basesoc_bankmachine4_next_state <= 2'd3;
         end
         3'd6: begin
-            vns_basesoc_litedramcore_bankmachine4_next_state <= 1'd0;
+            vns_basesoc_bankmachine4_next_state <= 1'd0;
         end
         default: begin
             if (soc_sdram_bankmachine4_refresh_req) begin
-                vns_basesoc_litedramcore_bankmachine4_next_state <= 3'd4;
+                vns_basesoc_bankmachine4_next_state <= 3'd4;
             end else begin
                 if (soc_sdram_bankmachine4_source_source_valid) begin
                     if (soc_sdram_bankmachine4_row_opened) begin
@@ -4620,13 +4640,13 @@ always @(*) begin
                             end
                             soc_sdram_bankmachine4_cmd_payload_cas <= 1'd1;
                             if ((soc_sdram_bankmachine4_cmd_ready & soc_sdram_bankmachine4_auto_precharge)) begin
-                                vns_basesoc_litedramcore_bankmachine4_next_state <= 2'd2;
+                                vns_basesoc_bankmachine4_next_state <= 2'd2;
                             end
                         end else begin
-                            vns_basesoc_litedramcore_bankmachine4_next_state <= 1'd1;
+                            vns_basesoc_bankmachine4_next_state <= 1'd1;
                         end
                     end else begin
-                        vns_basesoc_litedramcore_bankmachine4_next_state <= 2'd3;
+                        vns_basesoc_bankmachine4_next_state <= 2'd3;
                     end
                 end
             end
@@ -4709,27 +4729,27 @@ assign soc_sdram_bankmachine5_source_source_last = soc_sdram_bankmachine5_pipe_v
 assign soc_sdram_bankmachine5_source_source_payload_we = soc_sdram_bankmachine5_pipe_valid_source_payload_we;
 assign soc_sdram_bankmachine5_source_source_payload_addr = soc_sdram_bankmachine5_pipe_valid_source_payload_addr;
 always @(*) begin
-    soc_sdram_bankmachine5_cmd_payload_ras <= 1'd0;
-    soc_sdram_bankmachine5_cmd_payload_we <= 1'd0;
-    soc_sdram_bankmachine5_cmd_payload_is_cmd <= 1'd0;
     soc_sdram_bankmachine5_cmd_payload_is_read <= 1'd0;
     soc_sdram_bankmachine5_cmd_payload_is_write <= 1'd0;
     soc_sdram_bankmachine5_req_wdata_ready <= 1'd0;
     soc_sdram_bankmachine5_req_rdata_valid <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine5_next_state <= 3'd0;
     soc_sdram_bankmachine5_refresh_gnt <= 1'd0;
     soc_sdram_bankmachine5_row_open <= 1'd0;
     soc_sdram_bankmachine5_cmd_valid <= 1'd0;
     soc_sdram_bankmachine5_row_close <= 1'd0;
     soc_sdram_bankmachine5_row_col_n_addr_sel <= 1'd0;
     soc_sdram_bankmachine5_cmd_payload_cas <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine5_next_state <= vns_basesoc_litedramcore_bankmachine5_state;
-    case (vns_basesoc_litedramcore_bankmachine5_state)
+    soc_sdram_bankmachine5_cmd_payload_ras <= 1'd0;
+    vns_basesoc_bankmachine5_next_state <= 3'd0;
+    soc_sdram_bankmachine5_cmd_payload_we <= 1'd0;
+    soc_sdram_bankmachine5_cmd_payload_is_cmd <= 1'd0;
+    vns_basesoc_bankmachine5_next_state <= vns_basesoc_bankmachine5_state;
+    case (vns_basesoc_bankmachine5_state)
         1'd1: begin
             if ((soc_sdram_bankmachine5_twtpcon_ready & soc_sdram_bankmachine5_trascon_ready)) begin
                 soc_sdram_bankmachine5_cmd_valid <= 1'd1;
                 if (soc_sdram_bankmachine5_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine5_next_state <= 3'd5;
+                    vns_basesoc_bankmachine5_next_state <= 3'd5;
                 end
                 soc_sdram_bankmachine5_cmd_payload_ras <= 1'd1;
                 soc_sdram_bankmachine5_cmd_payload_we <= 1'd1;
@@ -4739,7 +4759,7 @@ always @(*) begin
         end
         2'd2: begin
             if ((soc_sdram_bankmachine5_twtpcon_ready & soc_sdram_bankmachine5_trascon_ready)) begin
-                vns_basesoc_litedramcore_bankmachine5_next_state <= 3'd5;
+                vns_basesoc_bankmachine5_next_state <= 3'd5;
             end
             soc_sdram_bankmachine5_row_close <= 1'd1;
         end
@@ -4750,7 +4770,7 @@ always @(*) begin
                 soc_sdram_bankmachine5_cmd_valid <= 1'd1;
                 soc_sdram_bankmachine5_cmd_payload_is_cmd <= 1'd1;
                 if (soc_sdram_bankmachine5_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine5_next_state <= 3'd6;
+                    vns_basesoc_bankmachine5_next_state <= 3'd6;
                 end
                 soc_sdram_bankmachine5_cmd_payload_ras <= 1'd1;
             end
@@ -4762,18 +4782,18 @@ always @(*) begin
             soc_sdram_bankmachine5_row_close <= 1'd1;
             soc_sdram_bankmachine5_cmd_payload_is_cmd <= 1'd1;
             if ((~soc_sdram_bankmachine5_refresh_req)) begin
-                vns_basesoc_litedramcore_bankmachine5_next_state <= 1'd0;
+                vns_basesoc_bankmachine5_next_state <= 1'd0;
             end
         end
         3'd5: begin
-            vns_basesoc_litedramcore_bankmachine5_next_state <= 2'd3;
+            vns_basesoc_bankmachine5_next_state <= 2'd3;
         end
         3'd6: begin
-            vns_basesoc_litedramcore_bankmachine5_next_state <= 1'd0;
+            vns_basesoc_bankmachine5_next_state <= 1'd0;
         end
         default: begin
             if (soc_sdram_bankmachine5_refresh_req) begin
-                vns_basesoc_litedramcore_bankmachine5_next_state <= 3'd4;
+                vns_basesoc_bankmachine5_next_state <= 3'd4;
             end else begin
                 if (soc_sdram_bankmachine5_source_source_valid) begin
                     if (soc_sdram_bankmachine5_row_opened) begin
@@ -4789,13 +4809,13 @@ always @(*) begin
                             end
                             soc_sdram_bankmachine5_cmd_payload_cas <= 1'd1;
                             if ((soc_sdram_bankmachine5_cmd_ready & soc_sdram_bankmachine5_auto_precharge)) begin
-                                vns_basesoc_litedramcore_bankmachine5_next_state <= 2'd2;
+                                vns_basesoc_bankmachine5_next_state <= 2'd2;
                             end
                         end else begin
-                            vns_basesoc_litedramcore_bankmachine5_next_state <= 1'd1;
+                            vns_basesoc_bankmachine5_next_state <= 1'd1;
                         end
                     end else begin
-                        vns_basesoc_litedramcore_bankmachine5_next_state <= 2'd3;
+                        vns_basesoc_bankmachine5_next_state <= 2'd3;
                     end
                 end
             end
@@ -4878,27 +4898,27 @@ assign soc_sdram_bankmachine6_source_source_last = soc_sdram_bankmachine6_pipe_v
 assign soc_sdram_bankmachine6_source_source_payload_we = soc_sdram_bankmachine6_pipe_valid_source_payload_we;
 assign soc_sdram_bankmachine6_source_source_payload_addr = soc_sdram_bankmachine6_pipe_valid_source_payload_addr;
 always @(*) begin
-    soc_sdram_bankmachine6_cmd_payload_is_write <= 1'd0;
-    soc_sdram_bankmachine6_req_wdata_ready <= 1'd0;
-    soc_sdram_bankmachine6_req_rdata_valid <= 1'd0;
     soc_sdram_bankmachine6_refresh_gnt <= 1'd0;
     soc_sdram_bankmachine6_row_open <= 1'd0;
     soc_sdram_bankmachine6_cmd_valid <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine6_next_state <= 3'd0;
     soc_sdram_bankmachine6_row_close <= 1'd0;
     soc_sdram_bankmachine6_row_col_n_addr_sel <= 1'd0;
     soc_sdram_bankmachine6_cmd_payload_cas <= 1'd0;
     soc_sdram_bankmachine6_cmd_payload_ras <= 1'd0;
     soc_sdram_bankmachine6_cmd_payload_we <= 1'd0;
     soc_sdram_bankmachine6_cmd_payload_is_cmd <= 1'd0;
+    vns_basesoc_bankmachine6_next_state <= 3'd0;
     soc_sdram_bankmachine6_cmd_payload_is_read <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine6_next_state <= vns_basesoc_litedramcore_bankmachine6_state;
-    case (vns_basesoc_litedramcore_bankmachine6_state)
+    soc_sdram_bankmachine6_cmd_payload_is_write <= 1'd0;
+    soc_sdram_bankmachine6_req_wdata_ready <= 1'd0;
+    soc_sdram_bankmachine6_req_rdata_valid <= 1'd0;
+    vns_basesoc_bankmachine6_next_state <= vns_basesoc_bankmachine6_state;
+    case (vns_basesoc_bankmachine6_state)
         1'd1: begin
             if ((soc_sdram_bankmachine6_twtpcon_ready & soc_sdram_bankmachine6_trascon_ready)) begin
                 soc_sdram_bankmachine6_cmd_valid <= 1'd1;
                 if (soc_sdram_bankmachine6_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine6_next_state <= 3'd5;
+                    vns_basesoc_bankmachine6_next_state <= 3'd5;
                 end
                 soc_sdram_bankmachine6_cmd_payload_ras <= 1'd1;
                 soc_sdram_bankmachine6_cmd_payload_we <= 1'd1;
@@ -4908,7 +4928,7 @@ always @(*) begin
         end
         2'd2: begin
             if ((soc_sdram_bankmachine6_twtpcon_ready & soc_sdram_bankmachine6_trascon_ready)) begin
-                vns_basesoc_litedramcore_bankmachine6_next_state <= 3'd5;
+                vns_basesoc_bankmachine6_next_state <= 3'd5;
             end
             soc_sdram_bankmachine6_row_close <= 1'd1;
         end
@@ -4919,7 +4939,7 @@ always @(*) begin
                 soc_sdram_bankmachine6_cmd_valid <= 1'd1;
                 soc_sdram_bankmachine6_cmd_payload_is_cmd <= 1'd1;
                 if (soc_sdram_bankmachine6_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine6_next_state <= 3'd6;
+                    vns_basesoc_bankmachine6_next_state <= 3'd6;
                 end
                 soc_sdram_bankmachine6_cmd_payload_ras <= 1'd1;
             end
@@ -4931,18 +4951,18 @@ always @(*) begin
             soc_sdram_bankmachine6_row_close <= 1'd1;
             soc_sdram_bankmachine6_cmd_payload_is_cmd <= 1'd1;
             if ((~soc_sdram_bankmachine6_refresh_req)) begin
-                vns_basesoc_litedramcore_bankmachine6_next_state <= 1'd0;
+                vns_basesoc_bankmachine6_next_state <= 1'd0;
             end
         end
         3'd5: begin
-            vns_basesoc_litedramcore_bankmachine6_next_state <= 2'd3;
+            vns_basesoc_bankmachine6_next_state <= 2'd3;
         end
         3'd6: begin
-            vns_basesoc_litedramcore_bankmachine6_next_state <= 1'd0;
+            vns_basesoc_bankmachine6_next_state <= 1'd0;
         end
         default: begin
             if (soc_sdram_bankmachine6_refresh_req) begin
-                vns_basesoc_litedramcore_bankmachine6_next_state <= 3'd4;
+                vns_basesoc_bankmachine6_next_state <= 3'd4;
             end else begin
                 if (soc_sdram_bankmachine6_source_source_valid) begin
                     if (soc_sdram_bankmachine6_row_opened) begin
@@ -4958,13 +4978,13 @@ always @(*) begin
                             end
                             soc_sdram_bankmachine6_cmd_payload_cas <= 1'd1;
                             if ((soc_sdram_bankmachine6_cmd_ready & soc_sdram_bankmachine6_auto_precharge)) begin
-                                vns_basesoc_litedramcore_bankmachine6_next_state <= 2'd2;
+                                vns_basesoc_bankmachine6_next_state <= 2'd2;
                             end
                         end else begin
-                            vns_basesoc_litedramcore_bankmachine6_next_state <= 1'd1;
+                            vns_basesoc_bankmachine6_next_state <= 1'd1;
                         end
                     end else begin
-                        vns_basesoc_litedramcore_bankmachine6_next_state <= 2'd3;
+                        vns_basesoc_bankmachine6_next_state <= 2'd3;
                     end
                 end
             end
@@ -5047,11 +5067,6 @@ assign soc_sdram_bankmachine7_source_source_last = soc_sdram_bankmachine7_pipe_v
 assign soc_sdram_bankmachine7_source_source_payload_we = soc_sdram_bankmachine7_pipe_valid_source_payload_we;
 assign soc_sdram_bankmachine7_source_source_payload_addr = soc_sdram_bankmachine7_pipe_valid_source_payload_addr;
 always @(*) begin
-    soc_sdram_bankmachine7_refresh_gnt <= 1'd0;
-    soc_sdram_bankmachine7_row_open <= 1'd0;
-    soc_sdram_bankmachine7_cmd_valid <= 1'd0;
-    soc_sdram_bankmachine7_row_close <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine7_next_state <= 3'd0;
     soc_sdram_bankmachine7_row_col_n_addr_sel <= 1'd0;
     soc_sdram_bankmachine7_cmd_payload_cas <= 1'd0;
     soc_sdram_bankmachine7_cmd_payload_ras <= 1'd0;
@@ -5059,15 +5074,20 @@ always @(*) begin
     soc_sdram_bankmachine7_cmd_payload_is_cmd <= 1'd0;
     soc_sdram_bankmachine7_cmd_payload_is_read <= 1'd0;
     soc_sdram_bankmachine7_cmd_payload_is_write <= 1'd0;
+    vns_basesoc_bankmachine7_next_state <= 3'd0;
     soc_sdram_bankmachine7_req_wdata_ready <= 1'd0;
     soc_sdram_bankmachine7_req_rdata_valid <= 1'd0;
-    vns_basesoc_litedramcore_bankmachine7_next_state <= vns_basesoc_litedramcore_bankmachine7_state;
-    case (vns_basesoc_litedramcore_bankmachine7_state)
+    soc_sdram_bankmachine7_refresh_gnt <= 1'd0;
+    soc_sdram_bankmachine7_row_open <= 1'd0;
+    soc_sdram_bankmachine7_cmd_valid <= 1'd0;
+    soc_sdram_bankmachine7_row_close <= 1'd0;
+    vns_basesoc_bankmachine7_next_state <= vns_basesoc_bankmachine7_state;
+    case (vns_basesoc_bankmachine7_state)
         1'd1: begin
             if ((soc_sdram_bankmachine7_twtpcon_ready & soc_sdram_bankmachine7_trascon_ready)) begin
                 soc_sdram_bankmachine7_cmd_valid <= 1'd1;
                 if (soc_sdram_bankmachine7_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine7_next_state <= 3'd5;
+                    vns_basesoc_bankmachine7_next_state <= 3'd5;
                 end
                 soc_sdram_bankmachine7_cmd_payload_ras <= 1'd1;
                 soc_sdram_bankmachine7_cmd_payload_we <= 1'd1;
@@ -5077,7 +5097,7 @@ always @(*) begin
         end
         2'd2: begin
             if ((soc_sdram_bankmachine7_twtpcon_ready & soc_sdram_bankmachine7_trascon_ready)) begin
-                vns_basesoc_litedramcore_bankmachine7_next_state <= 3'd5;
+                vns_basesoc_bankmachine7_next_state <= 3'd5;
             end
             soc_sdram_bankmachine7_row_close <= 1'd1;
         end
@@ -5088,7 +5108,7 @@ always @(*) begin
                 soc_sdram_bankmachine7_cmd_valid <= 1'd1;
                 soc_sdram_bankmachine7_cmd_payload_is_cmd <= 1'd1;
                 if (soc_sdram_bankmachine7_cmd_ready) begin
-                    vns_basesoc_litedramcore_bankmachine7_next_state <= 3'd6;
+                    vns_basesoc_bankmachine7_next_state <= 3'd6;
                 end
                 soc_sdram_bankmachine7_cmd_payload_ras <= 1'd1;
             end
@@ -5100,18 +5120,18 @@ always @(*) begin
             soc_sdram_bankmachine7_row_close <= 1'd1;
             soc_sdram_bankmachine7_cmd_payload_is_cmd <= 1'd1;
             if ((~soc_sdram_bankmachine7_refresh_req)) begin
-                vns_basesoc_litedramcore_bankmachine7_next_state <= 1'd0;
+                vns_basesoc_bankmachine7_next_state <= 1'd0;
             end
         end
         3'd5: begin
-            vns_basesoc_litedramcore_bankmachine7_next_state <= 2'd3;
+            vns_basesoc_bankmachine7_next_state <= 2'd3;
         end
         3'd6: begin
-            vns_basesoc_litedramcore_bankmachine7_next_state <= 1'd0;
+            vns_basesoc_bankmachine7_next_state <= 1'd0;
         end
         default: begin
             if (soc_sdram_bankmachine7_refresh_req) begin
-                vns_basesoc_litedramcore_bankmachine7_next_state <= 3'd4;
+                vns_basesoc_bankmachine7_next_state <= 3'd4;
             end else begin
                 if (soc_sdram_bankmachine7_source_source_valid) begin
                     if (soc_sdram_bankmachine7_row_opened) begin
@@ -5127,13 +5147,13 @@ always @(*) begin
                             end
                             soc_sdram_bankmachine7_cmd_payload_cas <= 1'd1;
                             if ((soc_sdram_bankmachine7_cmd_ready & soc_sdram_bankmachine7_auto_precharge)) begin
-                                vns_basesoc_litedramcore_bankmachine7_next_state <= 2'd2;
+                                vns_basesoc_bankmachine7_next_state <= 2'd2;
                             end
                         end else begin
-                            vns_basesoc_litedramcore_bankmachine7_next_state <= 1'd1;
+                            vns_basesoc_bankmachine7_next_state <= 1'd1;
                         end
                     end else begin
-                        vns_basesoc_litedramcore_bankmachine7_next_state <= 2'd3;
+                        vns_basesoc_bankmachine7_next_state <= 2'd3;
                     end
                 end
             end
@@ -5316,19 +5336,19 @@ assign soc_sdram_dfi_p1_cke = {1{soc_sdram_steerer2}};
 assign soc_sdram_dfi_p1_odt = {1{soc_sdram_steerer3}};
 assign soc_sdram_tfawcon_count = ((soc_sdram_tfawcon_window[0] + soc_sdram_tfawcon_window[1]) + soc_sdram_tfawcon_window[2]);
 always @(*) begin
-    soc_sdram_choose_req_cmd_ready <= 1'd0;
-    vns_basesoc_litedramcore_multiplexer_next_state <= 4'd0;
     soc_sdram_en1 <= 1'd0;
     soc_sdram_steerer_sel0 <= 2'd0;
     soc_sdram_steerer_sel1 <= 2'd0;
     soc_sdram_choose_cmd_want_activates <= 1'd0;
-    soc_sdram_cmd_ready <= 1'd0;
+    vns_basesoc_multiplexer_next_state <= 4'd0;
     soc_sdram_choose_cmd_cmd_ready <= 1'd0;
     soc_sdram_choose_req_want_reads <= 1'd0;
+    soc_sdram_cmd_ready <= 1'd0;
     soc_sdram_choose_req_want_writes <= 1'd0;
     soc_sdram_en0 <= 1'd0;
-    vns_basesoc_litedramcore_multiplexer_next_state <= vns_basesoc_litedramcore_multiplexer_state;
-    case (vns_basesoc_litedramcore_multiplexer_state)
+    soc_sdram_choose_req_cmd_ready <= 1'd0;
+    vns_basesoc_multiplexer_next_state <= vns_basesoc_multiplexer_state;
+    case (vns_basesoc_multiplexer_state)
         1'd1: begin
             soc_sdram_en1 <= 1'd1;
             soc_sdram_choose_req_want_writes <= 1'd1;
@@ -5355,60 +5375,60 @@ always @(*) begin
             end
             if (soc_sdram_read_available) begin
                 if (((~soc_sdram_write_available) | soc_sdram_max_time1)) begin
-                    vns_basesoc_litedramcore_multiplexer_next_state <= 2'd3;
+                    vns_basesoc_multiplexer_next_state <= 2'd3;
                 end
             end
             if (soc_sdram_go_to_refresh) begin
-                vns_basesoc_litedramcore_multiplexer_next_state <= 2'd2;
+                vns_basesoc_multiplexer_next_state <= 2'd2;
             end
         end
         2'd2: begin
             soc_sdram_steerer_sel0 <= 2'd3;
             soc_sdram_cmd_ready <= 1'd1;
             if (soc_sdram_cmd_last) begin
-                vns_basesoc_litedramcore_multiplexer_next_state <= 1'd0;
+                vns_basesoc_multiplexer_next_state <= 1'd0;
             end
         end
         2'd3: begin
             if (soc_sdram_twtrcon_ready) begin
-                vns_basesoc_litedramcore_multiplexer_next_state <= 1'd0;
+                vns_basesoc_multiplexer_next_state <= 1'd0;
             end
         end
         3'd4: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 3'd5;
+            vns_basesoc_multiplexer_next_state <= 3'd5;
         end
         3'd5: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 3'd6;
+            vns_basesoc_multiplexer_next_state <= 3'd6;
         end
         3'd6: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 3'd7;
+            vns_basesoc_multiplexer_next_state <= 3'd7;
         end
         3'd7: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 4'd8;
+            vns_basesoc_multiplexer_next_state <= 4'd8;
         end
         4'd8: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 4'd9;
+            vns_basesoc_multiplexer_next_state <= 4'd9;
         end
         4'd9: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 4'd10;
+            vns_basesoc_multiplexer_next_state <= 4'd10;
         end
         4'd10: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 4'd11;
+            vns_basesoc_multiplexer_next_state <= 4'd11;
         end
         4'd11: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 4'd12;
+            vns_basesoc_multiplexer_next_state <= 4'd12;
         end
         4'd12: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 4'd13;
+            vns_basesoc_multiplexer_next_state <= 4'd13;
         end
         4'd13: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 4'd14;
+            vns_basesoc_multiplexer_next_state <= 4'd14;
         end
         4'd14: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 4'd15;
+            vns_basesoc_multiplexer_next_state <= 4'd15;
         end
         4'd15: begin
-            vns_basesoc_litedramcore_multiplexer_next_state <= 1'd1;
+            vns_basesoc_multiplexer_next_state <= 1'd1;
         end
         default: begin
             soc_sdram_en0 <= 1'd1;
@@ -5436,62 +5456,62 @@ always @(*) begin
             end
             if (soc_sdram_write_available) begin
                 if (((~soc_sdram_read_available) | soc_sdram_max_time0)) begin
-                    vns_basesoc_litedramcore_multiplexer_next_state <= 3'd4;
+                    vns_basesoc_multiplexer_next_state <= 3'd4;
                 end
             end
             if (soc_sdram_go_to_refresh) begin
-                vns_basesoc_litedramcore_multiplexer_next_state <= 2'd2;
+                vns_basesoc_multiplexer_next_state <= 2'd2;
             end
         end
     endcase
 end
-assign vns_basesoc_litedramcore_roundrobin0_request = {(((soc_port_cmd_payload_addr[9:7] == 1'd0) & (~(((((((vns_basesoc_litedramcore_locked0 | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
-assign vns_basesoc_litedramcore_roundrobin0_ce = ((~soc_sdram_interface_bank0_valid) & (~soc_sdram_interface_bank0_lock));
+assign vns_basesoc_roundrobin0_request = {(((soc_port_cmd_payload_addr[9:7] == 1'd0) & (~(((((((vns_basesoc_locked0 | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
+assign vns_basesoc_roundrobin0_ce = ((~soc_sdram_interface_bank0_valid) & (~soc_sdram_interface_bank0_lock));
 assign soc_sdram_interface_bank0_addr = vns_rhs_array_muxed29;
 assign soc_sdram_interface_bank0_we = vns_rhs_array_muxed30;
 assign soc_sdram_interface_bank0_valid = vns_rhs_array_muxed31;
-assign vns_basesoc_litedramcore_roundrobin1_request = {(((soc_port_cmd_payload_addr[9:7] == 1'd1) & (~(((((((vns_basesoc_litedramcore_locked1 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
-assign vns_basesoc_litedramcore_roundrobin1_ce = ((~soc_sdram_interface_bank1_valid) & (~soc_sdram_interface_bank1_lock));
+assign vns_basesoc_roundrobin1_request = {(((soc_port_cmd_payload_addr[9:7] == 1'd1) & (~(((((((vns_basesoc_locked1 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
+assign vns_basesoc_roundrobin1_ce = ((~soc_sdram_interface_bank1_valid) & (~soc_sdram_interface_bank1_lock));
 assign soc_sdram_interface_bank1_addr = vns_rhs_array_muxed32;
 assign soc_sdram_interface_bank1_we = vns_rhs_array_muxed33;
 assign soc_sdram_interface_bank1_valid = vns_rhs_array_muxed34;
-assign vns_basesoc_litedramcore_roundrobin2_request = {(((soc_port_cmd_payload_addr[9:7] == 2'd2) & (~(((((((vns_basesoc_litedramcore_locked2 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
-assign vns_basesoc_litedramcore_roundrobin2_ce = ((~soc_sdram_interface_bank2_valid) & (~soc_sdram_interface_bank2_lock));
+assign vns_basesoc_roundrobin2_request = {(((soc_port_cmd_payload_addr[9:7] == 2'd2) & (~(((((((vns_basesoc_locked2 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
+assign vns_basesoc_roundrobin2_ce = ((~soc_sdram_interface_bank2_valid) & (~soc_sdram_interface_bank2_lock));
 assign soc_sdram_interface_bank2_addr = vns_rhs_array_muxed35;
 assign soc_sdram_interface_bank2_we = vns_rhs_array_muxed36;
 assign soc_sdram_interface_bank2_valid = vns_rhs_array_muxed37;
-assign vns_basesoc_litedramcore_roundrobin3_request = {(((soc_port_cmd_payload_addr[9:7] == 2'd3) & (~(((((((vns_basesoc_litedramcore_locked3 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
-assign vns_basesoc_litedramcore_roundrobin3_ce = ((~soc_sdram_interface_bank3_valid) & (~soc_sdram_interface_bank3_lock));
+assign vns_basesoc_roundrobin3_request = {(((soc_port_cmd_payload_addr[9:7] == 2'd3) & (~(((((((vns_basesoc_locked3 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
+assign vns_basesoc_roundrobin3_ce = ((~soc_sdram_interface_bank3_valid) & (~soc_sdram_interface_bank3_lock));
 assign soc_sdram_interface_bank3_addr = vns_rhs_array_muxed38;
 assign soc_sdram_interface_bank3_we = vns_rhs_array_muxed39;
 assign soc_sdram_interface_bank3_valid = vns_rhs_array_muxed40;
-assign vns_basesoc_litedramcore_roundrobin4_request = {(((soc_port_cmd_payload_addr[9:7] == 3'd4) & (~(((((((vns_basesoc_litedramcore_locked4 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
-assign vns_basesoc_litedramcore_roundrobin4_ce = ((~soc_sdram_interface_bank4_valid) & (~soc_sdram_interface_bank4_lock));
+assign vns_basesoc_roundrobin4_request = {(((soc_port_cmd_payload_addr[9:7] == 3'd4) & (~(((((((vns_basesoc_locked4 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
+assign vns_basesoc_roundrobin4_ce = ((~soc_sdram_interface_bank4_valid) & (~soc_sdram_interface_bank4_lock));
 assign soc_sdram_interface_bank4_addr = vns_rhs_array_muxed41;
 assign soc_sdram_interface_bank4_we = vns_rhs_array_muxed42;
 assign soc_sdram_interface_bank4_valid = vns_rhs_array_muxed43;
-assign vns_basesoc_litedramcore_roundrobin5_request = {(((soc_port_cmd_payload_addr[9:7] == 3'd5) & (~(((((((vns_basesoc_litedramcore_locked5 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
-assign vns_basesoc_litedramcore_roundrobin5_ce = ((~soc_sdram_interface_bank5_valid) & (~soc_sdram_interface_bank5_lock));
+assign vns_basesoc_roundrobin5_request = {(((soc_port_cmd_payload_addr[9:7] == 3'd5) & (~(((((((vns_basesoc_locked5 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
+assign vns_basesoc_roundrobin5_ce = ((~soc_sdram_interface_bank5_valid) & (~soc_sdram_interface_bank5_lock));
 assign soc_sdram_interface_bank5_addr = vns_rhs_array_muxed44;
 assign soc_sdram_interface_bank5_we = vns_rhs_array_muxed45;
 assign soc_sdram_interface_bank5_valid = vns_rhs_array_muxed46;
-assign vns_basesoc_litedramcore_roundrobin6_request = {(((soc_port_cmd_payload_addr[9:7] == 3'd6) & (~(((((((vns_basesoc_litedramcore_locked6 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
-assign vns_basesoc_litedramcore_roundrobin6_ce = ((~soc_sdram_interface_bank6_valid) & (~soc_sdram_interface_bank6_lock));
+assign vns_basesoc_roundrobin6_request = {(((soc_port_cmd_payload_addr[9:7] == 3'd6) & (~(((((((vns_basesoc_locked6 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid)};
+assign vns_basesoc_roundrobin6_ce = ((~soc_sdram_interface_bank6_valid) & (~soc_sdram_interface_bank6_lock));
 assign soc_sdram_interface_bank6_addr = vns_rhs_array_muxed47;
 assign soc_sdram_interface_bank6_we = vns_rhs_array_muxed48;
 assign soc_sdram_interface_bank6_valid = vns_rhs_array_muxed49;
-assign vns_basesoc_litedramcore_roundrobin7_request = {(((soc_port_cmd_payload_addr[9:7] == 3'd7) & (~(((((((vns_basesoc_litedramcore_locked7 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))))) & soc_port_cmd_valid)};
-assign vns_basesoc_litedramcore_roundrobin7_ce = ((~soc_sdram_interface_bank7_valid) & (~soc_sdram_interface_bank7_lock));
+assign vns_basesoc_roundrobin7_request = {(((soc_port_cmd_payload_addr[9:7] == 3'd7) & (~(((((((vns_basesoc_locked7 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))))) & soc_port_cmd_valid)};
+assign vns_basesoc_roundrobin7_ce = ((~soc_sdram_interface_bank7_valid) & (~soc_sdram_interface_bank7_lock));
 assign soc_sdram_interface_bank7_addr = vns_rhs_array_muxed50;
 assign soc_sdram_interface_bank7_we = vns_rhs_array_muxed51;
 assign soc_sdram_interface_bank7_valid = vns_rhs_array_muxed52;
-assign soc_port_cmd_ready = ((((((((1'd0 | (((vns_basesoc_litedramcore_roundrobin0_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 1'd0) & (~(((((((vns_basesoc_litedramcore_locked0 | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank0_ready)) | (((vns_basesoc_litedramcore_roundrobin1_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 1'd1) & (~(((((((vns_basesoc_litedramcore_locked1 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank1_ready)) | (((vns_basesoc_litedramcore_roundrobin2_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 2'd2) & (~(((((((vns_basesoc_litedramcore_locked2 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank2_ready)) | (((vns_basesoc_litedramcore_roundrobin3_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 2'd3) & (~(((((((vns_basesoc_litedramcore_locked3 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank3_ready)) | (((vns_basesoc_litedramcore_roundrobin4_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 3'd4) & (~(((((((vns_basesoc_litedramcore_locked4 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank4_ready)) | (((vns_basesoc_litedramcore_roundrobin5_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 3'd5) & (~(((((((vns_basesoc_litedramcore_locked5 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank5_ready)) | (((vns_basesoc_litedramcore_roundrobin6_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 3'd6) & (~(((((((vns_basesoc_litedramcore_locked6 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank6_ready)) | (((vns_basesoc_litedramcore_roundrobin7_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 3'd7) & (~(((((((vns_basesoc_litedramcore_locked7 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0)))))) & soc_sdram_interface_bank7_ready));
-assign soc_port_wdata_ready = vns_basesoc_litedramcore_new_master_wdata_ready3;
-assign soc_port_rdata_valid = vns_basesoc_litedramcore_new_master_rdata_valid13;
+assign soc_port_cmd_ready = ((((((((1'd0 | (((vns_basesoc_roundrobin0_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 1'd0) & (~(((((((vns_basesoc_locked0 | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank0_ready)) | (((vns_basesoc_roundrobin1_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 1'd1) & (~(((((((vns_basesoc_locked1 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank1_ready)) | (((vns_basesoc_roundrobin2_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 2'd2) & (~(((((((vns_basesoc_locked2 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank2_ready)) | (((vns_basesoc_roundrobin3_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 2'd3) & (~(((((((vns_basesoc_locked3 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank3_ready)) | (((vns_basesoc_roundrobin4_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 3'd4) & (~(((((((vns_basesoc_locked4 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank4_ready)) | (((vns_basesoc_roundrobin5_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 3'd5) & (~(((((((vns_basesoc_locked5 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank5_ready)) | (((vns_basesoc_roundrobin6_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 3'd6) & (~(((((((vns_basesoc_locked6 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0)))))) & soc_sdram_interface_bank6_ready)) | (((vns_basesoc_roundrobin7_grant == 1'd0) & ((soc_port_cmd_payload_addr[9:7] == 3'd7) & (~(((((((vns_basesoc_locked7 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0)))))) & soc_sdram_interface_bank7_ready));
+assign soc_port_wdata_ready = vns_basesoc_new_master_wdata_ready3;
+assign soc_port_rdata_valid = vns_basesoc_new_master_rdata_valid13;
 always @(*) begin
     soc_sdram_interface_wdata <= 128'd0;
     soc_sdram_interface_wdata_we <= 16'd0;
-    case ({vns_basesoc_litedramcore_new_master_wdata_ready3})
+    case ({vns_basesoc_new_master_wdata_ready3})
         1'd1: begin
             soc_sdram_interface_wdata <= soc_port_wdata_payload_data;
             soc_sdram_interface_wdata_we <= soc_port_wdata_payload_we;
@@ -5503,14 +5523,14 @@ always @(*) begin
     endcase
 end
 assign soc_port_rdata_payload_data = soc_sdram_interface_rdata;
-assign vns_basesoc_litedramcore_roundrobin0_grant = 1'd0;
-assign vns_basesoc_litedramcore_roundrobin1_grant = 1'd0;
-assign vns_basesoc_litedramcore_roundrobin2_grant = 1'd0;
-assign vns_basesoc_litedramcore_roundrobin3_grant = 1'd0;
-assign vns_basesoc_litedramcore_roundrobin4_grant = 1'd0;
-assign vns_basesoc_litedramcore_roundrobin5_grant = 1'd0;
-assign vns_basesoc_litedramcore_roundrobin6_grant = 1'd0;
-assign vns_basesoc_litedramcore_roundrobin7_grant = 1'd0;
+assign vns_basesoc_roundrobin0_grant = 1'd0;
+assign vns_basesoc_roundrobin1_grant = 1'd0;
+assign vns_basesoc_roundrobin2_grant = 1'd0;
+assign vns_basesoc_roundrobin3_grant = 1'd0;
+assign vns_basesoc_roundrobin4_grant = 1'd0;
+assign vns_basesoc_roundrobin5_grant = 1'd0;
+assign vns_basesoc_roundrobin6_grant = 1'd0;
+assign vns_basesoc_roundrobin7_grant = 1'd0;
 assign soc_litedram_wb_cyc = soc_wb_sdram_cyc;
 assign soc_litedram_wb_stb = soc_wb_sdram_stb;
 assign soc_wb_sdram_ack = soc_litedram_wb_ack;
@@ -5567,13 +5587,13 @@ assign soc_port_wdata_payload_data = soc_litedram_wb_dat_w;
 assign soc_port_wdata_payload_we = soc_litedram_wb_sel;
 assign soc_port_rdata_ready = 1'd1;
 always @(*) begin
-    soc_port_cmd_valid <= 1'd0;
-    soc_aborted_litedramwishbone2native_next_value <= 1'd0;
-    soc_is_ongoing <= 1'd0;
     soc_aborted_litedramwishbone2native_next_value_ce <= 1'd0;
     soc_litedram_wb_ack <= 1'd0;
+    soc_port_cmd_valid <= 1'd0;
     vns_basesoc_litedramwishbone2native_next_state <= 2'd0;
     soc_litedram_wb_dat_r <= 128'd0;
+    soc_is_ongoing <= 1'd0;
+    soc_aborted_litedramwishbone2native_next_value <= 1'd0;
     vns_basesoc_litedramwishbone2native_next_state <= vns_basesoc_litedramwishbone2native_state;
     case (vns_basesoc_litedramwishbone2native_state)
         1'd1: begin
@@ -5610,20 +5630,20 @@ end
 assign vns_basesoc_dat_w = vns_basesoc_w_payload_data;
 assign vns_basesoc_we = ((vns_basesoc_w_valid & vns_basesoc_w_ready) & (vns_basesoc_w_payload_strb != 1'd0));
 always @(*) begin
-    vns_basesoc_aw_ready <= 1'd0;
-    vns_basesoc_ar_ready <= 1'd0;
-    vns_basesoc_last_was_read_axilite2csr_next_value <= 1'd0;
-    vns_basesoc_axilite2csr_next_state <= 2'd0;
-    vns_basesoc_last_was_read_axilite2csr_next_value_ce <= 1'd0;
     vns_basesoc_w_ready <= 1'd0;
+    vns_basesoc_axilite2csr_next_state <= 2'd0;
     vns_basesoc_r_valid <= 1'd0;
     vns_basesoc_r_payload_resp <= 2'd0;
     vns_basesoc_adr <= 14'd0;
     vns_basesoc_r_payload_data <= 32'd0;
     vns_basesoc_do_read <= 1'd0;
-    vns_basesoc_b_valid <= 1'd0;
+    vns_basesoc_last_was_read_axilite2csr_next_value <= 1'd0;
     vns_basesoc_do_write <= 1'd0;
+    vns_basesoc_last_was_read_axilite2csr_next_value_ce <= 1'd0;
+    vns_basesoc_b_valid <= 1'd0;
     vns_basesoc_b_payload_resp <= 2'd0;
+    vns_basesoc_aw_ready <= 1'd0;
+    vns_basesoc_ar_ready <= 1'd0;
     vns_basesoc_axilite2csr_next_state <= vns_basesoc_axilite2csr_state;
     case (vns_basesoc_axilite2csr_state)
         1'd1: begin
@@ -5674,8 +5694,8 @@ end
 assign vns_csrbank0_sel = (vns_interface0_bank_bus_adr[13:9] == 1'd1);
 assign vns_csrbank0_reset0_r = vns_interface0_bank_bus_dat_w[1:0];
 always @(*) begin
-    vns_csrbank0_reset0_re <= 1'd0;
     vns_csrbank0_reset0_we <= 1'd0;
+    vns_csrbank0_reset0_re <= 1'd0;
     if ((vns_csrbank0_sel & (vns_interface0_bank_bus_adr[8:0] == 1'd0))) begin
         vns_csrbank0_reset0_re <= vns_interface0_bank_bus_we;
         vns_csrbank0_reset0_we <= (~vns_interface0_bank_bus_we);
@@ -5683,8 +5703,8 @@ always @(*) begin
 end
 assign vns_csrbank0_scratch0_r = vns_interface0_bank_bus_dat_w[31:0];
 always @(*) begin
-    vns_csrbank0_scratch0_we <= 1'd0;
     vns_csrbank0_scratch0_re <= 1'd0;
+    vns_csrbank0_scratch0_we <= 1'd0;
     if ((vns_csrbank0_sel & (vns_interface0_bank_bus_adr[8:0] == 1'd1))) begin
         vns_csrbank0_scratch0_re <= vns_interface0_bank_bus_we;
         vns_csrbank0_scratch0_we <= (~vns_interface0_bank_bus_we);
@@ -5702,8 +5722,8 @@ end
 assign vns_csrbank1_sel = (vns_interface1_bank_bus_adr[13:9] == 1'd0);
 assign vns_csrbank1_dly_sel0_r = vns_interface1_bank_bus_dat_w[1:0];
 always @(*) begin
-    vns_csrbank1_dly_sel0_we <= 1'd0;
     vns_csrbank1_dly_sel0_re <= 1'd0;
+    vns_csrbank1_dly_sel0_we <= 1'd0;
     if ((vns_csrbank1_sel & (vns_interface1_bank_bus_adr[8:0] == 1'd0))) begin
         vns_csrbank1_dly_sel0_re <= vns_interface1_bank_bus_we;
         vns_csrbank1_dly_sel0_we <= (~vns_interface1_bank_bus_we);
@@ -5729,8 +5749,8 @@ always @(*) begin
 end
 assign soc_ddrphy_rdly_dq_bitslip_rst_r = vns_interface1_bank_bus_dat_w[0];
 always @(*) begin
-    soc_ddrphy_rdly_dq_bitslip_rst_we <= 1'd0;
     soc_ddrphy_rdly_dq_bitslip_rst_re <= 1'd0;
+    soc_ddrphy_rdly_dq_bitslip_rst_we <= 1'd0;
     if ((vns_csrbank1_sel & (vns_interface1_bank_bus_adr[8:0] == 2'd3))) begin
         soc_ddrphy_rdly_dq_bitslip_rst_re <= vns_interface1_bank_bus_we;
         soc_ddrphy_rdly_dq_bitslip_rst_we <= (~vns_interface1_bank_bus_we);
@@ -5738,8 +5758,8 @@ always @(*) begin
 end
 assign soc_ddrphy_rdly_dq_bitslip_r = vns_interface1_bank_bus_dat_w[0];
 always @(*) begin
-    soc_ddrphy_rdly_dq_bitslip_we <= 1'd0;
     soc_ddrphy_rdly_dq_bitslip_re <= 1'd0;
+    soc_ddrphy_rdly_dq_bitslip_we <= 1'd0;
     if ((vns_csrbank1_sel & (vns_interface1_bank_bus_adr[8:0] == 3'd4))) begin
         soc_ddrphy_rdly_dq_bitslip_re <= vns_interface1_bank_bus_we;
         soc_ddrphy_rdly_dq_bitslip_we <= (~vns_interface1_bank_bus_we);
@@ -5756,8 +5776,8 @@ always @(*) begin
 end
 assign vns_csrbank1_burstdet_seen_r = vns_interface1_bank_bus_dat_w[1:0];
 always @(*) begin
-    vns_csrbank1_burstdet_seen_re <= 1'd0;
     vns_csrbank1_burstdet_seen_we <= 1'd0;
+    vns_csrbank1_burstdet_seen_re <= 1'd0;
     if ((vns_csrbank1_sel & (vns_interface1_bank_bus_adr[8:0] == 3'd6))) begin
         vns_csrbank1_burstdet_seen_re <= vns_interface1_bank_bus_we;
         vns_csrbank1_burstdet_seen_we <= (~vns_interface1_bank_bus_we);
@@ -5778,8 +5798,8 @@ always @(*) begin
 end
 assign vns_csrbank2_dfii_pi0_command0_r = vns_interface2_bank_bus_dat_w[5:0];
 always @(*) begin
-    vns_csrbank2_dfii_pi0_command0_we <= 1'd0;
     vns_csrbank2_dfii_pi0_command0_re <= 1'd0;
+    vns_csrbank2_dfii_pi0_command0_we <= 1'd0;
     if ((vns_csrbank2_sel & (vns_interface2_bank_bus_adr[8:0] == 1'd1))) begin
         vns_csrbank2_dfii_pi0_command0_re <= vns_interface2_bank_bus_we;
         vns_csrbank2_dfii_pi0_command0_we <= (~vns_interface2_bank_bus_we);
@@ -5796,8 +5816,8 @@ always @(*) begin
 end
 assign vns_csrbank2_dfii_pi0_address0_r = vns_interface2_bank_bus_dat_w[12:0];
 always @(*) begin
-    vns_csrbank2_dfii_pi0_address0_re <= 1'd0;
     vns_csrbank2_dfii_pi0_address0_we <= 1'd0;
+    vns_csrbank2_dfii_pi0_address0_re <= 1'd0;
     if ((vns_csrbank2_sel & (vns_interface2_bank_bus_adr[8:0] == 2'd3))) begin
         vns_csrbank2_dfii_pi0_address0_re <= vns_interface2_bank_bus_we;
         vns_csrbank2_dfii_pi0_address0_we <= (~vns_interface2_bank_bus_we);
@@ -5823,8 +5843,8 @@ always @(*) begin
 end
 assign vns_csrbank2_dfii_pi0_wrdata0_r = vns_interface2_bank_bus_dat_w[31:0];
 always @(*) begin
-    vns_csrbank2_dfii_pi0_wrdata0_re <= 1'd0;
     vns_csrbank2_dfii_pi0_wrdata0_we <= 1'd0;
+    vns_csrbank2_dfii_pi0_wrdata0_re <= 1'd0;
     if ((vns_csrbank2_sel & (vns_interface2_bank_bus_adr[8:0] == 3'd6))) begin
         vns_csrbank2_dfii_pi0_wrdata0_re <= vns_interface2_bank_bus_we;
         vns_csrbank2_dfii_pi0_wrdata0_we <= (~vns_interface2_bank_bus_we);
@@ -5832,8 +5852,8 @@ always @(*) begin
 end
 assign vns_csrbank2_dfii_pi0_rddata1_r = vns_interface2_bank_bus_dat_w[31:0];
 always @(*) begin
-    vns_csrbank2_dfii_pi0_rddata1_we <= 1'd0;
     vns_csrbank2_dfii_pi0_rddata1_re <= 1'd0;
+    vns_csrbank2_dfii_pi0_rddata1_we <= 1'd0;
     if ((vns_csrbank2_sel & (vns_interface2_bank_bus_adr[8:0] == 3'd7))) begin
         vns_csrbank2_dfii_pi0_rddata1_re <= vns_interface2_bank_bus_we;
         vns_csrbank2_dfii_pi0_rddata1_we <= (~vns_interface2_bank_bus_we);
@@ -5850,8 +5870,8 @@ always @(*) begin
 end
 assign vns_csrbank2_dfii_pi1_command0_r = vns_interface2_bank_bus_dat_w[5:0];
 always @(*) begin
-    vns_csrbank2_dfii_pi1_command0_re <= 1'd0;
     vns_csrbank2_dfii_pi1_command0_we <= 1'd0;
+    vns_csrbank2_dfii_pi1_command0_re <= 1'd0;
     if ((vns_csrbank2_sel & (vns_interface2_bank_bus_adr[8:0] == 4'd9))) begin
         vns_csrbank2_dfii_pi1_command0_re <= vns_interface2_bank_bus_we;
         vns_csrbank2_dfii_pi1_command0_we <= (~vns_interface2_bank_bus_we);
@@ -5886,8 +5906,8 @@ always @(*) begin
 end
 assign vns_csrbank2_dfii_pi1_wrdata1_r = vns_interface2_bank_bus_dat_w[31:0];
 always @(*) begin
-    vns_csrbank2_dfii_pi1_wrdata1_re <= 1'd0;
     vns_csrbank2_dfii_pi1_wrdata1_we <= 1'd0;
+    vns_csrbank2_dfii_pi1_wrdata1_re <= 1'd0;
     if ((vns_csrbank2_sel & (vns_interface2_bank_bus_adr[8:0] == 4'd13))) begin
         vns_csrbank2_dfii_pi1_wrdata1_re <= vns_interface2_bank_bus_we;
         vns_csrbank2_dfii_pi1_wrdata1_we <= (~vns_interface2_bank_bus_we);
@@ -5895,8 +5915,8 @@ always @(*) begin
 end
 assign vns_csrbank2_dfii_pi1_wrdata0_r = vns_interface2_bank_bus_dat_w[31:0];
 always @(*) begin
-    vns_csrbank2_dfii_pi1_wrdata0_we <= 1'd0;
     vns_csrbank2_dfii_pi1_wrdata0_re <= 1'd0;
+    vns_csrbank2_dfii_pi1_wrdata0_we <= 1'd0;
     if ((vns_csrbank2_sel & (vns_interface2_bank_bus_adr[8:0] == 4'd14))) begin
         vns_csrbank2_dfii_pi1_wrdata0_re <= vns_interface2_bank_bus_we;
         vns_csrbank2_dfii_pi1_wrdata0_we <= (~vns_interface2_bank_bus_we);
@@ -5913,8 +5933,8 @@ always @(*) begin
 end
 assign vns_csrbank2_dfii_pi1_rddata0_r = vns_interface2_bank_bus_dat_w[31:0];
 always @(*) begin
-    vns_csrbank2_dfii_pi1_rddata0_re <= 1'd0;
     vns_csrbank2_dfii_pi1_rddata0_we <= 1'd0;
+    vns_csrbank2_dfii_pi1_rddata0_re <= 1'd0;
     if ((vns_csrbank2_sel & (vns_interface2_bank_bus_adr[8:0] == 5'd16))) begin
         vns_csrbank2_dfii_pi1_rddata0_re <= vns_interface2_bank_bus_we;
         vns_csrbank2_dfii_pi1_rddata0_we <= (~vns_interface2_bank_bus_we);
@@ -5956,8 +5976,8 @@ assign soc_sdram_phaseinjector1_rddata_we = vns_csrbank2_dfii_pi1_rddata0_we;
 assign vns_csrbank3_sel = (vns_interface3_bank_bus_adr[13:9] == 2'd3);
 assign vns_csrbank3_load0_r = vns_interface3_bank_bus_dat_w[31:0];
 always @(*) begin
-    vns_csrbank3_load0_re <= 1'd0;
     vns_csrbank3_load0_we <= 1'd0;
+    vns_csrbank3_load0_re <= 1'd0;
     if ((vns_csrbank3_sel & (vns_interface3_bank_bus_adr[8:0] == 1'd0))) begin
         vns_csrbank3_load0_re <= vns_interface3_bank_bus_we;
         vns_csrbank3_load0_we <= (~vns_interface3_bank_bus_we);
@@ -5965,8 +5985,8 @@ always @(*) begin
 end
 assign vns_csrbank3_reload0_r = vns_interface3_bank_bus_dat_w[31:0];
 always @(*) begin
-    vns_csrbank3_reload0_we <= 1'd0;
     vns_csrbank3_reload0_re <= 1'd0;
+    vns_csrbank3_reload0_we <= 1'd0;
     if ((vns_csrbank3_sel & (vns_interface3_bank_bus_adr[8:0] == 1'd1))) begin
         vns_csrbank3_reload0_re <= vns_interface3_bank_bus_we;
         vns_csrbank3_reload0_we <= (~vns_interface3_bank_bus_we);
@@ -5992,8 +6012,8 @@ always @(*) begin
 end
 assign vns_csrbank3_value_r = vns_interface3_bank_bus_dat_w[31:0];
 always @(*) begin
-    vns_csrbank3_value_we <= 1'd0;
     vns_csrbank3_value_re <= 1'd0;
+    vns_csrbank3_value_we <= 1'd0;
     if ((vns_csrbank3_sel & (vns_interface3_bank_bus_adr[8:0] == 3'd4))) begin
         vns_csrbank3_value_re <= vns_interface3_bank_bus_we;
         vns_csrbank3_value_we <= (~vns_interface3_bank_bus_we);
@@ -6010,8 +6030,8 @@ always @(*) begin
 end
 assign vns_csrbank3_ev_pending_r = vns_interface3_bank_bus_dat_w[0];
 always @(*) begin
-    vns_csrbank3_ev_pending_re <= 1'd0;
     vns_csrbank3_ev_pending_we <= 1'd0;
+    vns_csrbank3_ev_pending_re <= 1'd0;
     if ((vns_csrbank3_sel & (vns_interface3_bank_bus_adr[8:0] == 3'd6))) begin
         vns_csrbank3_ev_pending_re <= vns_interface3_bank_bus_we;
         vns_csrbank3_ev_pending_we <= (~vns_interface3_bank_bus_we);
@@ -6019,8 +6039,8 @@ always @(*) begin
 end
 assign vns_csrbank3_ev_enable0_r = vns_interface3_bank_bus_dat_w[0];
 always @(*) begin
-    vns_csrbank3_ev_enable0_we <= 1'd0;
     vns_csrbank3_ev_enable0_re <= 1'd0;
+    vns_csrbank3_ev_enable0_we <= 1'd0;
     if ((vns_csrbank3_sel & (vns_interface3_bank_bus_adr[8:0] == 3'd7))) begin
         vns_csrbank3_ev_enable0_re <= vns_interface3_bank_bus_we;
         vns_csrbank3_ev_enable0_we <= (~vns_interface3_bank_bus_we);
@@ -6061,8 +6081,8 @@ always @(*) begin
 end
 assign vns_csrbank4_rxempty_r = vns_interface4_bank_bus_dat_w[0];
 always @(*) begin
-    vns_csrbank4_rxempty_re <= 1'd0;
     vns_csrbank4_rxempty_we <= 1'd0;
+    vns_csrbank4_rxempty_re <= 1'd0;
     if ((vns_csrbank4_sel & (vns_interface4_bank_bus_adr[8:0] == 2'd2))) begin
         vns_csrbank4_rxempty_re <= vns_interface4_bank_bus_we;
         vns_csrbank4_rxempty_we <= (~vns_interface4_bank_bus_we);
@@ -6079,8 +6099,8 @@ always @(*) begin
 end
 assign vns_csrbank4_ev_pending_r = vns_interface4_bank_bus_dat_w[1:0];
 always @(*) begin
-    vns_csrbank4_ev_pending_we <= 1'd0;
     vns_csrbank4_ev_pending_re <= 1'd0;
+    vns_csrbank4_ev_pending_we <= 1'd0;
     if ((vns_csrbank4_sel & (vns_interface4_bank_bus_adr[8:0] == 3'd4))) begin
         vns_csrbank4_ev_pending_re <= vns_interface4_bank_bus_we;
         vns_csrbank4_ev_pending_we <= (~vns_interface4_bank_bus_we);
@@ -6106,8 +6126,8 @@ always @(*) begin
 end
 assign vns_csrbank4_rxfull_r = vns_interface4_bank_bus_dat_w[0];
 always @(*) begin
-    vns_csrbank4_rxfull_we <= 1'd0;
     vns_csrbank4_rxfull_re <= 1'd0;
+    vns_csrbank4_rxfull_we <= 1'd0;
     if ((vns_csrbank4_sel & (vns_interface4_bank_bus_adr[8:0] == 3'd7))) begin
         vns_csrbank4_rxfull_re <= vns_interface4_bank_bus_we;
         vns_csrbank4_rxfull_we <= (~vns_interface4_bank_bus_we);
@@ -6824,7 +6844,7 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed29 <= 20'd0;
-    case (vns_basesoc_litedramcore_roundrobin0_grant)
+    case (vns_basesoc_roundrobin0_grant)
         default: begin
             vns_rhs_array_muxed29 <= {soc_port_cmd_payload_addr[22:10], soc_port_cmd_payload_addr[6:0]};
         end
@@ -6832,7 +6852,7 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed30 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin0_grant)
+    case (vns_basesoc_roundrobin0_grant)
         default: begin
             vns_rhs_array_muxed30 <= soc_port_cmd_payload_we;
         end
@@ -6840,15 +6860,15 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed31 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin0_grant)
+    case (vns_basesoc_roundrobin0_grant)
         default: begin
-            vns_rhs_array_muxed31 <= (((soc_port_cmd_payload_addr[9:7] == 1'd0) & (~(((((((vns_basesoc_litedramcore_locked0 | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
+            vns_rhs_array_muxed31 <= (((soc_port_cmd_payload_addr[9:7] == 1'd0) & (~(((((((vns_basesoc_locked0 | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
         end
     endcase
 end
 always @(*) begin
     vns_rhs_array_muxed32 <= 20'd0;
-    case (vns_basesoc_litedramcore_roundrobin1_grant)
+    case (vns_basesoc_roundrobin1_grant)
         default: begin
             vns_rhs_array_muxed32 <= {soc_port_cmd_payload_addr[22:10], soc_port_cmd_payload_addr[6:0]};
         end
@@ -6856,7 +6876,7 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed33 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin1_grant)
+    case (vns_basesoc_roundrobin1_grant)
         default: begin
             vns_rhs_array_muxed33 <= soc_port_cmd_payload_we;
         end
@@ -6864,15 +6884,15 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed34 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin1_grant)
+    case (vns_basesoc_roundrobin1_grant)
         default: begin
-            vns_rhs_array_muxed34 <= (((soc_port_cmd_payload_addr[9:7] == 1'd1) & (~(((((((vns_basesoc_litedramcore_locked1 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
+            vns_rhs_array_muxed34 <= (((soc_port_cmd_payload_addr[9:7] == 1'd1) & (~(((((((vns_basesoc_locked1 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
         end
     endcase
 end
 always @(*) begin
     vns_rhs_array_muxed35 <= 20'd0;
-    case (vns_basesoc_litedramcore_roundrobin2_grant)
+    case (vns_basesoc_roundrobin2_grant)
         default: begin
             vns_rhs_array_muxed35 <= {soc_port_cmd_payload_addr[22:10], soc_port_cmd_payload_addr[6:0]};
         end
@@ -6880,7 +6900,7 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed36 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin2_grant)
+    case (vns_basesoc_roundrobin2_grant)
         default: begin
             vns_rhs_array_muxed36 <= soc_port_cmd_payload_we;
         end
@@ -6888,15 +6908,15 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed37 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin2_grant)
+    case (vns_basesoc_roundrobin2_grant)
         default: begin
-            vns_rhs_array_muxed37 <= (((soc_port_cmd_payload_addr[9:7] == 2'd2) & (~(((((((vns_basesoc_litedramcore_locked2 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
+            vns_rhs_array_muxed37 <= (((soc_port_cmd_payload_addr[9:7] == 2'd2) & (~(((((((vns_basesoc_locked2 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
         end
     endcase
 end
 always @(*) begin
     vns_rhs_array_muxed38 <= 20'd0;
-    case (vns_basesoc_litedramcore_roundrobin3_grant)
+    case (vns_basesoc_roundrobin3_grant)
         default: begin
             vns_rhs_array_muxed38 <= {soc_port_cmd_payload_addr[22:10], soc_port_cmd_payload_addr[6:0]};
         end
@@ -6904,7 +6924,7 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed39 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin3_grant)
+    case (vns_basesoc_roundrobin3_grant)
         default: begin
             vns_rhs_array_muxed39 <= soc_port_cmd_payload_we;
         end
@@ -6912,15 +6932,15 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed40 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin3_grant)
+    case (vns_basesoc_roundrobin3_grant)
         default: begin
-            vns_rhs_array_muxed40 <= (((soc_port_cmd_payload_addr[9:7] == 2'd3) & (~(((((((vns_basesoc_litedramcore_locked3 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
+            vns_rhs_array_muxed40 <= (((soc_port_cmd_payload_addr[9:7] == 2'd3) & (~(((((((vns_basesoc_locked3 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
         end
     endcase
 end
 always @(*) begin
     vns_rhs_array_muxed41 <= 20'd0;
-    case (vns_basesoc_litedramcore_roundrobin4_grant)
+    case (vns_basesoc_roundrobin4_grant)
         default: begin
             vns_rhs_array_muxed41 <= {soc_port_cmd_payload_addr[22:10], soc_port_cmd_payload_addr[6:0]};
         end
@@ -6928,7 +6948,7 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed42 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin4_grant)
+    case (vns_basesoc_roundrobin4_grant)
         default: begin
             vns_rhs_array_muxed42 <= soc_port_cmd_payload_we;
         end
@@ -6936,15 +6956,15 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed43 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin4_grant)
+    case (vns_basesoc_roundrobin4_grant)
         default: begin
-            vns_rhs_array_muxed43 <= (((soc_port_cmd_payload_addr[9:7] == 3'd4) & (~(((((((vns_basesoc_litedramcore_locked4 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
+            vns_rhs_array_muxed43 <= (((soc_port_cmd_payload_addr[9:7] == 3'd4) & (~(((((((vns_basesoc_locked4 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
         end
     endcase
 end
 always @(*) begin
     vns_rhs_array_muxed44 <= 20'd0;
-    case (vns_basesoc_litedramcore_roundrobin5_grant)
+    case (vns_basesoc_roundrobin5_grant)
         default: begin
             vns_rhs_array_muxed44 <= {soc_port_cmd_payload_addr[22:10], soc_port_cmd_payload_addr[6:0]};
         end
@@ -6952,7 +6972,7 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed45 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin5_grant)
+    case (vns_basesoc_roundrobin5_grant)
         default: begin
             vns_rhs_array_muxed45 <= soc_port_cmd_payload_we;
         end
@@ -6960,15 +6980,15 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed46 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin5_grant)
+    case (vns_basesoc_roundrobin5_grant)
         default: begin
-            vns_rhs_array_muxed46 <= (((soc_port_cmd_payload_addr[9:7] == 3'd5) & (~(((((((vns_basesoc_litedramcore_locked5 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
+            vns_rhs_array_muxed46 <= (((soc_port_cmd_payload_addr[9:7] == 3'd5) & (~(((((((vns_basesoc_locked5 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
         end
     endcase
 end
 always @(*) begin
     vns_rhs_array_muxed47 <= 20'd0;
-    case (vns_basesoc_litedramcore_roundrobin6_grant)
+    case (vns_basesoc_roundrobin6_grant)
         default: begin
             vns_rhs_array_muxed47 <= {soc_port_cmd_payload_addr[22:10], soc_port_cmd_payload_addr[6:0]};
         end
@@ -6976,7 +6996,7 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed48 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin6_grant)
+    case (vns_basesoc_roundrobin6_grant)
         default: begin
             vns_rhs_array_muxed48 <= soc_port_cmd_payload_we;
         end
@@ -6984,15 +7004,15 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed49 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin6_grant)
+    case (vns_basesoc_roundrobin6_grant)
         default: begin
-            vns_rhs_array_muxed49 <= (((soc_port_cmd_payload_addr[9:7] == 3'd6) & (~(((((((vns_basesoc_litedramcore_locked6 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_litedramcore_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
+            vns_rhs_array_muxed49 <= (((soc_port_cmd_payload_addr[9:7] == 3'd6) & (~(((((((vns_basesoc_locked6 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank7_lock & (vns_basesoc_roundrobin7_grant == 1'd0))))) & soc_port_cmd_valid);
         end
     endcase
 end
 always @(*) begin
     vns_rhs_array_muxed50 <= 20'd0;
-    case (vns_basesoc_litedramcore_roundrobin7_grant)
+    case (vns_basesoc_roundrobin7_grant)
         default: begin
             vns_rhs_array_muxed50 <= {soc_port_cmd_payload_addr[22:10], soc_port_cmd_payload_addr[6:0]};
         end
@@ -7000,7 +7020,7 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed51 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin7_grant)
+    case (vns_basesoc_roundrobin7_grant)
         default: begin
             vns_rhs_array_muxed51 <= soc_port_cmd_payload_we;
         end
@@ -7008,9 +7028,9 @@ always @(*) begin
 end
 always @(*) begin
     vns_rhs_array_muxed52 <= 1'd0;
-    case (vns_basesoc_litedramcore_roundrobin7_grant)
+    case (vns_basesoc_roundrobin7_grant)
         default: begin
-            vns_rhs_array_muxed52 <= (((soc_port_cmd_payload_addr[9:7] == 3'd7) & (~(((((((vns_basesoc_litedramcore_locked7 | (soc_sdram_interface_bank0_lock & (vns_basesoc_litedramcore_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_litedramcore_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_litedramcore_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_litedramcore_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_litedramcore_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_litedramcore_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_litedramcore_roundrobin6_grant == 1'd0))))) & soc_port_cmd_valid);
+            vns_rhs_array_muxed52 <= (((soc_port_cmd_payload_addr[9:7] == 3'd7) & (~(((((((vns_basesoc_locked7 | (soc_sdram_interface_bank0_lock & (vns_basesoc_roundrobin0_grant == 1'd0))) | (soc_sdram_interface_bank1_lock & (vns_basesoc_roundrobin1_grant == 1'd0))) | (soc_sdram_interface_bank2_lock & (vns_basesoc_roundrobin2_grant == 1'd0))) | (soc_sdram_interface_bank3_lock & (vns_basesoc_roundrobin3_grant == 1'd0))) | (soc_sdram_interface_bank4_lock & (vns_basesoc_roundrobin4_grant == 1'd0))) | (soc_sdram_interface_bank5_lock & (vns_basesoc_roundrobin5_grant == 1'd0))) | (soc_sdram_interface_bank6_lock & (vns_basesoc_roundrobin6_grant == 1'd0))))) & soc_port_cmd_valid);
         end
     endcase
 end
@@ -7888,7 +7908,7 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_refresher_state <= vns_basesoc_litedramcore_refresher_next_state;
+    vns_basesoc_refresher_state <= vns_basesoc_refresher_next_state;
     if (soc_sdram_bankmachine0_row_close) begin
         soc_sdram_bankmachine0_row_opened <= 1'd0;
     end else begin
@@ -7964,7 +7984,7 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_bankmachine0_state <= vns_basesoc_litedramcore_bankmachine0_next_state;
+    vns_basesoc_bankmachine0_state <= vns_basesoc_bankmachine0_next_state;
     if (soc_sdram_bankmachine1_row_close) begin
         soc_sdram_bankmachine1_row_opened <= 1'd0;
     end else begin
@@ -8040,7 +8060,7 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_bankmachine1_state <= vns_basesoc_litedramcore_bankmachine1_next_state;
+    vns_basesoc_bankmachine1_state <= vns_basesoc_bankmachine1_next_state;
     if (soc_sdram_bankmachine2_row_close) begin
         soc_sdram_bankmachine2_row_opened <= 1'd0;
     end else begin
@@ -8116,7 +8136,7 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_bankmachine2_state <= vns_basesoc_litedramcore_bankmachine2_next_state;
+    vns_basesoc_bankmachine2_state <= vns_basesoc_bankmachine2_next_state;
     if (soc_sdram_bankmachine3_row_close) begin
         soc_sdram_bankmachine3_row_opened <= 1'd0;
     end else begin
@@ -8192,7 +8212,7 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_bankmachine3_state <= vns_basesoc_litedramcore_bankmachine3_next_state;
+    vns_basesoc_bankmachine3_state <= vns_basesoc_bankmachine3_next_state;
     if (soc_sdram_bankmachine4_row_close) begin
         soc_sdram_bankmachine4_row_opened <= 1'd0;
     end else begin
@@ -8268,7 +8288,7 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_bankmachine4_state <= vns_basesoc_litedramcore_bankmachine4_next_state;
+    vns_basesoc_bankmachine4_state <= vns_basesoc_bankmachine4_next_state;
     if (soc_sdram_bankmachine5_row_close) begin
         soc_sdram_bankmachine5_row_opened <= 1'd0;
     end else begin
@@ -8344,7 +8364,7 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_bankmachine5_state <= vns_basesoc_litedramcore_bankmachine5_next_state;
+    vns_basesoc_bankmachine5_state <= vns_basesoc_bankmachine5_next_state;
     if (soc_sdram_bankmachine6_row_close) begin
         soc_sdram_bankmachine6_row_opened <= 1'd0;
     end else begin
@@ -8420,7 +8440,7 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_bankmachine6_state <= vns_basesoc_litedramcore_bankmachine6_next_state;
+    vns_basesoc_bankmachine6_state <= vns_basesoc_bankmachine6_next_state;
     if (soc_sdram_bankmachine7_row_close) begin
         soc_sdram_bankmachine7_row_opened <= 1'd0;
     end else begin
@@ -8496,7 +8516,7 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_bankmachine7_state <= vns_basesoc_litedramcore_bankmachine7_next_state;
+    vns_basesoc_bankmachine7_state <= vns_basesoc_bankmachine7_next_state;
     if ((~soc_sdram_en0)) begin
         soc_sdram_time0 <= 5'd31;
     end else begin
@@ -9052,25 +9072,25 @@ always @(posedge sys_clk) begin
             end
         end
     end
-    vns_basesoc_litedramcore_multiplexer_state <= vns_basesoc_litedramcore_multiplexer_next_state;
-    vns_basesoc_litedramcore_new_master_wdata_ready0 <= ((((((((1'd0 | ((vns_basesoc_litedramcore_roundrobin0_grant == 1'd0) & soc_sdram_interface_bank0_wdata_ready)) | ((vns_basesoc_litedramcore_roundrobin1_grant == 1'd0) & soc_sdram_interface_bank1_wdata_ready)) | ((vns_basesoc_litedramcore_roundrobin2_grant == 1'd0) & soc_sdram_interface_bank2_wdata_ready)) | ((vns_basesoc_litedramcore_roundrobin3_grant == 1'd0) & soc_sdram_interface_bank3_wdata_ready)) | ((vns_basesoc_litedramcore_roundrobin4_grant == 1'd0) & soc_sdram_interface_bank4_wdata_ready)) | ((vns_basesoc_litedramcore_roundrobin5_grant == 1'd0) & soc_sdram_interface_bank5_wdata_ready)) | ((vns_basesoc_litedramcore_roundrobin6_grant == 1'd0) & soc_sdram_interface_bank6_wdata_ready)) | ((vns_basesoc_litedramcore_roundrobin7_grant == 1'd0) & soc_sdram_interface_bank7_wdata_ready));
-    vns_basesoc_litedramcore_new_master_wdata_ready1 <= vns_basesoc_litedramcore_new_master_wdata_ready0;
-    vns_basesoc_litedramcore_new_master_wdata_ready2 <= vns_basesoc_litedramcore_new_master_wdata_ready1;
-    vns_basesoc_litedramcore_new_master_wdata_ready3 <= vns_basesoc_litedramcore_new_master_wdata_ready2;
-    vns_basesoc_litedramcore_new_master_rdata_valid0 <= ((((((((1'd0 | ((vns_basesoc_litedramcore_roundrobin0_grant == 1'd0) & soc_sdram_interface_bank0_rdata_valid)) | ((vns_basesoc_litedramcore_roundrobin1_grant == 1'd0) & soc_sdram_interface_bank1_rdata_valid)) | ((vns_basesoc_litedramcore_roundrobin2_grant == 1'd0) & soc_sdram_interface_bank2_rdata_valid)) | ((vns_basesoc_litedramcore_roundrobin3_grant == 1'd0) & soc_sdram_interface_bank3_rdata_valid)) | ((vns_basesoc_litedramcore_roundrobin4_grant == 1'd0) & soc_sdram_interface_bank4_rdata_valid)) | ((vns_basesoc_litedramcore_roundrobin5_grant == 1'd0) & soc_sdram_interface_bank5_rdata_valid)) | ((vns_basesoc_litedramcore_roundrobin6_grant == 1'd0) & soc_sdram_interface_bank6_rdata_valid)) | ((vns_basesoc_litedramcore_roundrobin7_grant == 1'd0) & soc_sdram_interface_bank7_rdata_valid));
-    vns_basesoc_litedramcore_new_master_rdata_valid1 <= vns_basesoc_litedramcore_new_master_rdata_valid0;
-    vns_basesoc_litedramcore_new_master_rdata_valid2 <= vns_basesoc_litedramcore_new_master_rdata_valid1;
-    vns_basesoc_litedramcore_new_master_rdata_valid3 <= vns_basesoc_litedramcore_new_master_rdata_valid2;
-    vns_basesoc_litedramcore_new_master_rdata_valid4 <= vns_basesoc_litedramcore_new_master_rdata_valid3;
-    vns_basesoc_litedramcore_new_master_rdata_valid5 <= vns_basesoc_litedramcore_new_master_rdata_valid4;
-    vns_basesoc_litedramcore_new_master_rdata_valid6 <= vns_basesoc_litedramcore_new_master_rdata_valid5;
-    vns_basesoc_litedramcore_new_master_rdata_valid7 <= vns_basesoc_litedramcore_new_master_rdata_valid6;
-    vns_basesoc_litedramcore_new_master_rdata_valid8 <= vns_basesoc_litedramcore_new_master_rdata_valid7;
-    vns_basesoc_litedramcore_new_master_rdata_valid9 <= vns_basesoc_litedramcore_new_master_rdata_valid8;
-    vns_basesoc_litedramcore_new_master_rdata_valid10 <= vns_basesoc_litedramcore_new_master_rdata_valid9;
-    vns_basesoc_litedramcore_new_master_rdata_valid11 <= vns_basesoc_litedramcore_new_master_rdata_valid10;
-    vns_basesoc_litedramcore_new_master_rdata_valid12 <= vns_basesoc_litedramcore_new_master_rdata_valid11;
-    vns_basesoc_litedramcore_new_master_rdata_valid13 <= vns_basesoc_litedramcore_new_master_rdata_valid12;
+    vns_basesoc_multiplexer_state <= vns_basesoc_multiplexer_next_state;
+    vns_basesoc_new_master_wdata_ready0 <= ((((((((1'd0 | ((vns_basesoc_roundrobin0_grant == 1'd0) & soc_sdram_interface_bank0_wdata_ready)) | ((vns_basesoc_roundrobin1_grant == 1'd0) & soc_sdram_interface_bank1_wdata_ready)) | ((vns_basesoc_roundrobin2_grant == 1'd0) & soc_sdram_interface_bank2_wdata_ready)) | ((vns_basesoc_roundrobin3_grant == 1'd0) & soc_sdram_interface_bank3_wdata_ready)) | ((vns_basesoc_roundrobin4_grant == 1'd0) & soc_sdram_interface_bank4_wdata_ready)) | ((vns_basesoc_roundrobin5_grant == 1'd0) & soc_sdram_interface_bank5_wdata_ready)) | ((vns_basesoc_roundrobin6_grant == 1'd0) & soc_sdram_interface_bank6_wdata_ready)) | ((vns_basesoc_roundrobin7_grant == 1'd0) & soc_sdram_interface_bank7_wdata_ready));
+    vns_basesoc_new_master_wdata_ready1 <= vns_basesoc_new_master_wdata_ready0;
+    vns_basesoc_new_master_wdata_ready2 <= vns_basesoc_new_master_wdata_ready1;
+    vns_basesoc_new_master_wdata_ready3 <= vns_basesoc_new_master_wdata_ready2;
+    vns_basesoc_new_master_rdata_valid0 <= ((((((((1'd0 | ((vns_basesoc_roundrobin0_grant == 1'd0) & soc_sdram_interface_bank0_rdata_valid)) | ((vns_basesoc_roundrobin1_grant == 1'd0) & soc_sdram_interface_bank1_rdata_valid)) | ((vns_basesoc_roundrobin2_grant == 1'd0) & soc_sdram_interface_bank2_rdata_valid)) | ((vns_basesoc_roundrobin3_grant == 1'd0) & soc_sdram_interface_bank3_rdata_valid)) | ((vns_basesoc_roundrobin4_grant == 1'd0) & soc_sdram_interface_bank4_rdata_valid)) | ((vns_basesoc_roundrobin5_grant == 1'd0) & soc_sdram_interface_bank5_rdata_valid)) | ((vns_basesoc_roundrobin6_grant == 1'd0) & soc_sdram_interface_bank6_rdata_valid)) | ((vns_basesoc_roundrobin7_grant == 1'd0) & soc_sdram_interface_bank7_rdata_valid));
+    vns_basesoc_new_master_rdata_valid1 <= vns_basesoc_new_master_rdata_valid0;
+    vns_basesoc_new_master_rdata_valid2 <= vns_basesoc_new_master_rdata_valid1;
+    vns_basesoc_new_master_rdata_valid3 <= vns_basesoc_new_master_rdata_valid2;
+    vns_basesoc_new_master_rdata_valid4 <= vns_basesoc_new_master_rdata_valid3;
+    vns_basesoc_new_master_rdata_valid5 <= vns_basesoc_new_master_rdata_valid4;
+    vns_basesoc_new_master_rdata_valid6 <= vns_basesoc_new_master_rdata_valid5;
+    vns_basesoc_new_master_rdata_valid7 <= vns_basesoc_new_master_rdata_valid6;
+    vns_basesoc_new_master_rdata_valid8 <= vns_basesoc_new_master_rdata_valid7;
+    vns_basesoc_new_master_rdata_valid9 <= vns_basesoc_new_master_rdata_valid8;
+    vns_basesoc_new_master_rdata_valid10 <= vns_basesoc_new_master_rdata_valid9;
+    vns_basesoc_new_master_rdata_valid11 <= vns_basesoc_new_master_rdata_valid10;
+    vns_basesoc_new_master_rdata_valid12 <= vns_basesoc_new_master_rdata_valid11;
+    vns_basesoc_new_master_rdata_valid13 <= vns_basesoc_new_master_rdata_valid12;
     vns_basesoc_litedramwishbone2native_state <= vns_basesoc_litedramwishbone2native_next_state;
     if (soc_aborted_litedramwishbone2native_next_value_ce) begin
         soc_aborted <= soc_aborted_litedramwishbone2native_next_value;
@@ -9642,34 +9662,34 @@ always @(posedge sys_clk) begin
         vns_socbushandler_fsm0_state <= 1'd0;
         vns_socbushandler_fsm1_state <= 1'd0;
         vns_basesoc_axilitesram_state <= 2'd0;
-        vns_basesoc_litedramcore_refresher_state <= 2'd0;
-        vns_basesoc_litedramcore_bankmachine0_state <= 3'd0;
-        vns_basesoc_litedramcore_bankmachine1_state <= 3'd0;
-        vns_basesoc_litedramcore_bankmachine2_state <= 3'd0;
-        vns_basesoc_litedramcore_bankmachine3_state <= 3'd0;
-        vns_basesoc_litedramcore_bankmachine4_state <= 3'd0;
-        vns_basesoc_litedramcore_bankmachine5_state <= 3'd0;
-        vns_basesoc_litedramcore_bankmachine6_state <= 3'd0;
-        vns_basesoc_litedramcore_bankmachine7_state <= 3'd0;
-        vns_basesoc_litedramcore_multiplexer_state <= 4'd0;
-        vns_basesoc_litedramcore_new_master_wdata_ready0 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_wdata_ready1 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_wdata_ready2 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_wdata_ready3 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid0 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid1 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid2 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid3 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid4 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid5 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid6 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid7 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid8 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid9 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid10 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid11 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid12 <= 1'd0;
-        vns_basesoc_litedramcore_new_master_rdata_valid13 <= 1'd0;
+        vns_basesoc_refresher_state <= 2'd0;
+        vns_basesoc_bankmachine0_state <= 3'd0;
+        vns_basesoc_bankmachine1_state <= 3'd0;
+        vns_basesoc_bankmachine2_state <= 3'd0;
+        vns_basesoc_bankmachine3_state <= 3'd0;
+        vns_basesoc_bankmachine4_state <= 3'd0;
+        vns_basesoc_bankmachine5_state <= 3'd0;
+        vns_basesoc_bankmachine6_state <= 3'd0;
+        vns_basesoc_bankmachine7_state <= 3'd0;
+        vns_basesoc_multiplexer_state <= 4'd0;
+        vns_basesoc_new_master_wdata_ready0 <= 1'd0;
+        vns_basesoc_new_master_wdata_ready1 <= 1'd0;
+        vns_basesoc_new_master_wdata_ready2 <= 1'd0;
+        vns_basesoc_new_master_wdata_ready3 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid0 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid1 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid2 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid3 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid4 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid5 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid6 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid7 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid8 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid9 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid10 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid11 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid12 <= 1'd0;
+        vns_basesoc_new_master_rdata_valid13 <= 1'd0;
         vns_basesoc_litedramwishbone2native_state <= 2'd0;
         vns_basesoc_axilite2csr_state <= 2'd0;
     end
@@ -9703,7 +9723,7 @@ CLKDIVF #(
 ) CLKDIVF (
 	.ALIGNWD(1'd0),
 	.CLKI(sys2x_clk),
-	.RST(soc_crg_reset0),
+	.RST(soc_crg_reset),
 	.CDIVX(sys_clk)
 );
 
@@ -11275,40 +11295,95 @@ EHXPLLL #(
 	.CLKOS_FPHASE(1'd0),
 	.FEEDBK_PATH("INT_OS")
 ) EHXPLLL (
-	.CLKI(soc_crg_clkin),
-	.RST(soc_crg_reset1),
-	.STDBY(soc_crg_stdby),
-	.CLKOP(soc_crg_clkout),
-	.CLKOS(vns_basesoc_crg_ecp5pll),
-	.LOCK(vns_basesoc_crg_locked)
+	.CLKI(soc_crg_ecp5pll0_clkin),
+	.RST(soc_crg_pll_reset),
+	.STDBY(soc_crg_pll_stdby),
+	.CLKOP(soc_crg_ecp5pll0_clkout),
+	.CLKOS(vns_basesoc_ecp5pll0_ecp5pll),
+	.LOCK(vns_basesoc_ecp5pll0_locked)
+);
+
+(* FREQUENCY_PIN_CLKI = "48.0", FREQUENCY_PIN_CLKOP = "48.0", FREQUENCY_PIN_CLKOS = "12.0", ICP_CURRENT = "6", LPF_RESISTOR = "16", MFG_ENABLE_FILTEROPAMP = "1", MFG_GMCREF_SEL = "2" *)
+EHXPLLL #(
+	.CLKFB_DIV(4'd9),
+	.CLKI_DIV(1'd1),
+	.CLKOP_CPHASE(4'd8),
+	.CLKOP_DIV(4'd9),
+	.CLKOP_ENABLE("ENABLED"),
+	.CLKOP_FPHASE(1'd0),
+	.CLKOS2_CPHASE(1'd0),
+	.CLKOS2_DIV(1'd1),
+	.CLKOS2_ENABLE("ENABLED"),
+	.CLKOS2_FPHASE(1'd0),
+	.CLKOS_CPHASE(6'd35),
+	.CLKOS_DIV(6'd36),
+	.CLKOS_ENABLE("ENABLED"),
+	.CLKOS_FPHASE(1'd0),
+	.FEEDBK_PATH("INT_OS2")
+) EHXPLLL_1 (
+	.CLKI(soc_crg_ecp5pll1_clkin),
+	.RST(soc_crg_usb_pll_reset),
+	.STDBY(soc_crg_usb_pll_stdby),
+	.CLKOP(soc_crg_ecp5pll1_clkout0),
+	.CLKOS(soc_crg_ecp5pll1_clkout1),
+	.CLKOS2(vns_basesoc_ecp5pll1_ecp5pll),
+	.LOCK(vns_basesoc_ecp5pll1_locked)
 );
 
 FD1S3BX FD1S3BX(
 	.CK(sys2x_i_clk),
 	.D(1'd0),
-	.PD((~soc_crg_locked)),
+	.PD((~soc_crg_pll_locked)),
 	.Q(vns_rst10)
 );
 
 FD1S3BX FD1S3BX_1(
 	.CK(sys2x_i_clk),
 	.D(vns_rst10),
-	.PD((~soc_crg_locked)),
+	.PD((~soc_crg_pll_locked)),
 	.Q(sys2x_i_rst)
 );
 
 FD1S3BX FD1S3BX_2(
 	.CK(sys2x_i_clk),
 	.D(1'd0),
-	.PD((~soc_crg_locked)),
+	.PD((~soc_crg_pll_locked)),
 	.Q(vns_rst11)
 );
 
 FD1S3BX FD1S3BX_3(
 	.CK(sys2x_i_clk),
 	.D(vns_rst11),
-	.PD((~soc_crg_locked)),
+	.PD((~soc_crg_pll_locked)),
 	.Q(sys2x_i_rst)
+);
+
+FD1S3BX FD1S3BX_4(
+	.CK(usb_48_clk),
+	.D(1'd0),
+	.PD((~soc_crg_usb_pll_locked)),
+	.Q(vns_rst12)
+);
+
+FD1S3BX FD1S3BX_5(
+	.CK(usb_48_clk),
+	.D(vns_rst12),
+	.PD((~soc_crg_usb_pll_locked)),
+	.Q(usb_48_rst)
+);
+
+FD1S3BX FD1S3BX_6(
+	.CK(usb_12_clk),
+	.D(1'd0),
+	.PD((~soc_crg_usb_pll_locked)),
+	.Q(vns_rst13)
+);
+
+FD1S3BX FD1S3BX_7(
+	.CK(usb_12_clk),
+	.D(vns_rst13),
+	.PD((~soc_crg_usb_pll_locked)),
+	.Q(usb_12_rst)
 );
 
 TRELLIS_IO #(
@@ -11476,5 +11551,5 @@ TRELLIS_IO #(
 endmodule
 
 // -----------------------------------------------------------------------------
-//  Auto-Generated by LiteX on 2023-05-04 00:55:23.
+//  Auto-Generated by LiteX on 2023-05-04 08:24:17.
 //------------------------------------------------------------------------------

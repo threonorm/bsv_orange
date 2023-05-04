@@ -128,6 +128,18 @@ class CRG(Module):
             AsyncResetSynchronizer(self.cd_sys2x_i, ~pll.locked ),
         ]
 
+        # USB PLL
+        if with_usb_pll:
+            self.clock_domains.cd_usb_12 = ClockDomain()
+            self.clock_domains.cd_usb_48 = ClockDomain()
+            usb_pll = ECP5PLL()
+            self.comb += usb_pll.reset.eq(~por_done)
+            self.submodules += usb_pll
+            usb_pll.register_clkin(clk48, 48e6)
+            usb_pll.create_clkout(self.cd_usb_48, 48e6)
+            usb_pll.create_clkout(self.cd_usb_12, 12e6)
+
+
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
@@ -155,7 +167,7 @@ class BaseSoC(SoCCore):
 
         # platform.add_extension(extras)
 
-        self.submodules.crg = crg = CRG(platform, sys_clk_freq)
+        self.submodules.crg = crg = CRG(platform, sys_clk_freq, with_usb_pll=True)
       
         # Disconnect Serial Debug (Stub required so BIOS is kept happy)
         kwargs['uart_name']="stream"
@@ -169,7 +181,7 @@ class BaseSoC(SoCCore):
         self.comb += axi_bus.connect_to_pads(axi_pads, mode="slave")
 
         # connect UART stream to NULL
-        # self.comb += self.uart.source.ready.eq(1)
+        self.comb += self.uart.source.ready.eq(1)
         
         # CRG --------------------------------------------------------------------------------------
 
