@@ -70,54 +70,37 @@ module top(OrangeCrab ifc);
         Bit#(8) addr = 0;
         if (usb_core.uart_out_ready() == 1) begin
             addr <- usb_core.uart_out();
-            req <= addr;
+
             r <= addr;
-            to_host.enq(addr);
+            let newaddr = 0;
+            /* to_host.enq(addr); */
+            if (addr[7] == 1) begin 
+                newaddr = addr;
+            end else begin 
+                if (req[7] != 1)
+                rServer.request.put(AXI4_Lite_Read_Rq_Pkg{addr: zeroExtend(addr[6:0]), prot: unpack(0)});
+            end
+            if (req[7] == 1)  begin 
+                wServer.request.put(AXI4_Lite_Write_Rq_Pkg{addr: zeroExtend(req[6:0]), data: zeroExtend(addr), strb: -1, prot: unpack(0)});
+                newaddr = 0;
+            end 
+            req <= newaddr;
         end
     endrule
+
+
     rule output_uart;
         usb_core.uart_in(to_host.first());
             if (usb_core.uart_in_ready() == 1) 
                 to_host.deq();
     endrule
-    /*  */
-    /* rule yo;  */
-    /*     let datamem_aux <- rServer.response.get(); */
-    /*     Bit#(32) datamem = datamem_aux.data; */
-    /*     usb_core.uart_in(truncate(datamem)); */
-    /*     r <= truncate(datamem); */
-    /* endrule */
 
-    /* rule get_d if (s == Data); */
-    /*     /* let datauart <- usb_core.uart_out(); */
-    /*     usb_core.uart_in(req); */
-    /*     s <= Addr; */
-    /* endrule */
-    /* rule get_d if (s == Data); */
-    /*     let datauart <- usb_core.uart_out(); */
-    /*     if (req[7] == 1) begin  */
-    /*         wServer.request.put(AXI4_Lite_Write_Rq_Pkg{addr: zeroExtend(req[6:0]), data: zeroExtend(datauart), strb: -1, prot: defaultValue}); */
-    /*     end else  */
-    /*      begin */
-    /*  */
-    /*             case (datauart) */
-    /*         /* pack('r'): begin  */ 
-    /*         8'd114: begin  */
-    /*             r <= truncate(datamem); */
-    /*             end */
-    /*         /* pack('g'): begin  */
-    /*         8'd103: begin  */
-    /*             g <= truncate(datamem); */
-    /*             end */
-    /*         /* pack('b'): begin  */
-    /*         8'd98: begin  */
-    /*             b <= truncate(datamem); */
-    /*             end */
-    /*      endcase */
-    /*    end */
-    /*    s <= Data; */
-    /* endrule */
-    /*  */
+
+    rule yo; 
+        let datamem_aux <- rServer.response.get();
+        Bit#(32) datamem = datamem_aux.data;
+        to_host.enq(truncate(datamem));
+    endrule
 
 
 

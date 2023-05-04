@@ -199,7 +199,7 @@ class BaseSoC(SoCCore):
                 phy                     = self.ddrphy,
                 module                  = sdram_module(sys_clk_freq, "1:2"),
                 origin                  = self.mem_map["main_ram"],
-                size                    = 0,
+                size                    = kwargs.get("max_sdram_size", 0x40000000),
                 l2_cache_size           = 0,
             )
 

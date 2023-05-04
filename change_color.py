@@ -3,10 +3,10 @@ from vcolorpicker import getColor
 
 ser = serial.Serial('/dev/ttyACM0')
 
-def r(d):
-    ser.write(b'r')
-    ser.write(d.to_bytes(1,'little'))
-
+# def r(d):
+#     ser.write(b'r')
+#     ser.write(d.to_bytes(1,'little'))
+#
 def g(d):
     ser.write(b'g')
     ser.write(d.to_bytes(1,'little'))
@@ -25,7 +25,7 @@ def pick_color():
     change_color(int(r),int(g),int(b))
 
 def w(src, d):
-    x = 128 + src
+    x = 128 | src
     ser.write(x.to_bytes(1,'little'))
     ser.write(d.to_bytes(1,'little'))
 
