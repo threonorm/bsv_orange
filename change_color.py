@@ -29,12 +29,16 @@ def w(src, d):
     ser.write(x.to_bytes(1,'little'))
     ser.write(d.to_bytes(1,'little'))
 
+def r(src):
+    ser.write(src.to_bytes(1,'little'))
+
+
 def setColor(src, dst):
     ser.write(src.to_bytes(1,'little'))
     ser.write(dst)
 
 
-w(0, 230)
-setColor(0, 'r')
-setColor(0, 'g')
-setColor(0, 'b')
+# w(0, 230)
+# setColor(0, 'r')
+# setColor(0, 'g')
+# setColor(0, 'b')
