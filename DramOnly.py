@@ -175,6 +175,7 @@ class BaseSoC(SoCCore):
 
         # DDR3 SDRAM -------------------------------------------------------------------------------
         if not self.integrated_main_ram_size:
+            print("OK doing DRAM")
             available_sdram_modules = {
                 "MT41K64M16":  MT41K64M16,
                 "MT41K128M16": MT41K128M16,
