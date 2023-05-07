@@ -7,12 +7,15 @@ import AXI4_Lite_Types::*;
 import Connectable::*;
 import DefaultValue::*;
 import FIFO::*;
+import FIFOF::*;
+import SpecialFIFOs::*;
+import BRAM::*;
 
 
 interface OrangeCrab;
     (* prefix = "" *)
     interface Usb usb;
-
+    
     (* always_ready, prefix = "" *)
     method Bit#(1) pin_pu;
     
@@ -27,10 +30,10 @@ interface OrangeCrab;
     interface DramPins dram;
 endinterface
 
-typedef enum {Addr, Data} State deriving (Eq,Bits);
+typedef enum {Kind, AddrRead, AddrWrite, Data} State deriving (Eq,Bits);
 
 // Import BVI for the usb_bridge_top
-(* synthesize, default_clock_osc = "pin_clk", default_reset = "rst_n" *)
+(* synthesize, default_clock_osc = "pin_clk", default_reset = "usr_btn" *)
 module top(OrangeCrab ifc);
     Reg#(Bit#(8)) cnt <- mkReg(0);
     Reg#(Bit#(16)) rcnt <- mkReg(0);
@@ -47,13 +50,16 @@ module top(OrangeCrab ifc);
     Inout#(Bit#(1)) usbp = usb_core.usb_d_p; 
     Inout#(Bit#(1)) usbn = usb_core.usb_d_n; 
 
-    // 
-    Reg#(Bit#(8)) r <- mkReg(0);
+    /* BRAM_Configure cfg = defaultValue(); */
+    /* BRAM2PortBE#(Bit#(8), Bit#(32), 4) bram <- mkBRAM2ServerBE(cfg); */
+
+    Reg#(Bit#(8)) r <- mkReg(255);
     Reg#(Bit#(8)) g <- mkReg(0);
     Reg#(Bit#(8)) b <- mkReg(0);
     Reg#(Bit#(8)) req <- mkReg(0);
-    Reg#(State) s <- mkReg(Addr);
+    Reg#(State) s <- mkReg(Kind);
     FIFO#(Bit#(8)) to_host <- mkFIFO;
+    FIFOF#(Bit#(8)) from_host <- mkSizedFIFOF(8);
 
     rule reset_setup;
         cnt <= cnt + 1;
@@ -61,46 +67,87 @@ module top(OrangeCrab ifc);
         rcnt <= rcnt + zeroExtend(reset);
         usb_core.reset(reset);
     endrule
-    /*  */
+
     rule pull_respW;
         let x <- wServer.response.get();
     endrule
 
-    rule get_w if (s == Addr);
+    rule get_k ;
         Bit#(8) addr = 0;
-        if (usb_core.uart_out_ready() == 1) begin
+        if (from_host.notFull) begin
             addr <- usb_core.uart_out();
-
-            r <= addr;
-            let newaddr = 0;
-            /* to_host.enq(addr); */
-            if (addr[7] == 1) begin 
-                newaddr = addr;
-            end else begin 
-                if (req[7] != 1)
-                rServer.request.put(AXI4_Lite_Read_Rq_Pkg{addr: zeroExtend(addr[6:0]), prot: unpack(0)});
+            if (usb_core.uart_out_ready() == 1) begin 
+                from_host.enq(addr);
+                r <= ~r;
             end
-            if (req[7] == 1)  begin 
-                wServer.request.put(AXI4_Lite_Write_Rq_Pkg{addr: zeroExtend(req[6:0]), data: zeroExtend(addr), strb: -1, prot: unpack(0)});
-                newaddr = 0;
-            end 
-            req <= newaddr;
         end
     endrule
 
-
-    rule output_uart;
-        usb_core.uart_in(to_host.first());
-            if (usb_core.uart_in_ready() == 1) 
-                to_host.deq();
+    rule color;
+        case (s)
+            Kind:  b <= 255;
+            AddrRead: b <= 128;
+            AddrWrite: b <= 64;
+            Data: b <= 0;
+        endcase
     endrule
 
+    rule start if (s == Kind);
+        let addr = from_host.first();
+        from_host.deq();
+        if (addr == 0) s <= AddrRead;
+        else s <= AddrWrite;
+    endrule
 
+    rule get_r if (s==AddrRead);
+        Bit#(8) addr = 0;
+        addr = from_host.first();
+        from_host.deq();
+        rServer.request.put(AXI4_Lite_Read_Rq_Pkg{addr: zeroExtend(addr[7:0]), prot: unpack(0)});
+        /* bram.portA.request.put(BRAMRequestBE{ */
+        /*         writeen: 0, */
+        /*         responseOnWrite: False, */
+        /*         address:addr, */
+        /*         datain: ?}); */
+        s <= Kind;
+    endrule
+    
     rule yo; 
         let datamem_aux <- rServer.response.get();
+        /* let datamem_aux <- bram.portA.response.get(); */
         Bit#(32) datamem = datamem_aux.data;
         to_host.enq(truncate(datamem));
     endrule
+    
+    
+    rule get_wa if (s==AddrWrite);
+        Bit#(8) addr = 0;
+        addr = from_host.first();
+        from_host.deq();
+        req <= addr;
+        s <= Data;
+    endrule
+    
+    rule get_wd if (s==Data);
+        Bit#(8) addr = 0;
+        addr = from_host.first();
+        from_host.deq();
+        /* bram.portA.request.put(BRAMRequestBE{ */
+        /*         writeen: -1, */
+        /*         responseOnWrite: False, */
+        /*         address:req, */
+        /* datain: zeroExtend(addr)}); */
+        wServer.request.put(AXI4_Lite_Write_Rq_Pkg{addr: zeroExtend(req[6:0]), data: zeroExtend(addr), strb: -1, prot: unpack(0)});
+        s <= Kind;
+    endrule
+    
+    
+    rule output_uart;
+        usb_core.uart_in(to_host.first());
+        if (usb_core.uart_in_ready() == 1) 
+            to_host.deq();
+    endrule
+
 
 
 

@@ -50,10 +50,24 @@ module mkUsbCore(UsbCore ifc);
 
     /* method uart_in(uart_in_data) enable (uart_in_valid); */
     /* method uart_out_data uart_out()  enable (uart_out_ready); */
-  
+    /*  */
+    /* schedule (reset, uart_in, uart_out, uart_in_ready, uart_out_ready) */
+    /*           CF */
+    /*         (reset,  uart_out,  uart_in_ready, uart_out_ready) ; */
     schedule (reset, uart_in, uart_out, uart_in_ready, uart_out_ready)
               CF
-            (reset, uart_in, uart_out,  uart_in_ready, uart_out_ready) ;
+            (reset,  uart_in_ready, uart_out_ready) ;
+
+    schedule (uart_in) CF (uart_out);
+
+     schedule (uart_in)
+              C
+            (uart_in) ;
+
+     schedule (uart_out)
+              C
+            (uart_out) ;
+
 endmodule
 
 
