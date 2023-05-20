@@ -15,6 +15,8 @@ cp gsd_orangecrab_sram.init build/.
 cp FIFO2.v build/.
 cp SizedFIFO.v build/.
 cp BRAM2BE.v build/.
+cp SyncReset0.v build/.
+cp ResetEither.v build/.
 
 bsc -p $BLUEAXI:$BLUELIB:+ --show-schedule -opt-AndOr -opt-bool -opt-ATS  --aggressive-conditions -bdir build -vdir build -verilog -u OrangeCrabTop.bsv
 sed -i '0,/\.pin_usb_p/{s/\.pin_usb_p(usb_core$pin_usb_p)/usb_core$pin_usb_p/}' build/top.v

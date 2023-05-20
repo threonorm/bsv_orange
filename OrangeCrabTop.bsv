@@ -10,6 +10,7 @@ import FIFO::*;
 import FIFOF::*;
 import SpecialFIFOs::*;
 import BRAM::*;
+import Gearbox::*;
 
 
 interface OrangeCrab;
@@ -41,6 +42,11 @@ module top(OrangeCrab ifc);
     UsbCore usb_core <- mkUsbCore();
     // DRAM Core
     GsdOrange system <- mkGsdOrange();
+    let clock <- exposeCurrentClock;
+    let reset <- exposeCurrentReset;
+
+    Gearbox#(1,4, Bit#(8)) convertByteToWord <- mk1toNGearbox(clock, reset, clock, reset);
+    Gearbox#(4,1, Bit#(8)) convertWordToByte <- mkNto1Gearbox(clock, reset, clock, reset);
 
     AXI4_Lite_Master_Wr#(32,32) wServer <- mkAXI4_Lite_Master_Wr(1);
     AXI4_Lite_Master_Rd#(32,32) rServer <- mkAXI4_Lite_Master_Rd(1);
@@ -56,10 +62,8 @@ module top(OrangeCrab ifc);
     Reg#(Bit#(8)) r <- mkReg(255);
     Reg#(Bit#(8)) g <- mkReg(0);
     Reg#(Bit#(8)) b <- mkReg(0);
-    Reg#(Bit#(8)) req <- mkReg(0);
+    Reg#(Bit#(32)) req <- mkReg(0);
     Reg#(State) s <- mkReg(Kind);
-    FIFO#(Bit#(8)) to_host <- mkFIFO;
-    FIFOF#(Bit#(8)) from_host <- mkSizedFIFOF(8);
 
     rule reset_setup;
         cnt <= cnt + 1;
@@ -74,10 +78,10 @@ module top(OrangeCrab ifc);
 
     rule get_k ;
         Bit#(8) addr = 0;
-        if (from_host.notFull) begin
+        if (convertByteToWord.notFull) begin
             addr <- usb_core.uart_out();
             if (usb_core.uart_out_ready() == 1) begin 
-                from_host.enq(addr);
+                convertByteToWord.enq(unpack(addr));
                 r <= ~r;
             end
         end
@@ -93,59 +97,48 @@ module top(OrangeCrab ifc);
     endrule
 
     rule start if (s == Kind);
-        let addr = from_host.first();
-        from_host.deq();
+        let addr = pack(convertByteToWord.first());
+        convertByteToWord.deq();
         if (addr == 0) s <= AddrRead;
         else s <= AddrWrite;
     endrule
 
     rule get_r if (s==AddrRead);
-        Bit#(8) addr = 0;
-        addr = from_host.first();
-        from_host.deq();
+        Bit#(32) addr = 0;
+        addr = pack(convertByteToWord.first());
+        convertByteToWord.deq();
         rServer.request.put(AXI4_Lite_Read_Rq_Pkg{addr: zeroExtend(addr[7:0]), prot: unpack(0)});
-        /* bram.portA.request.put(BRAMRequestBE{ */
-        /*         writeen: 0, */
-        /*         responseOnWrite: False, */
-        /*         address:addr, */
-        /*         datain: ?}); */
         s <= Kind;
     endrule
     
     rule yo; 
         let datamem_aux <- rServer.response.get();
-        /* let datamem_aux <- bram.portA.response.get(); */
         Bit#(32) datamem = datamem_aux.data;
-        to_host.enq(truncate(datamem));
+        convertWordToByte.enq(unpack(datamem));
     endrule
     
     
     rule get_wa if (s==AddrWrite);
-        Bit#(8) addr = 0;
-        addr = from_host.first();
-        from_host.deq();
+        Bit#(32) addr = 0;
+        addr = pack(convertByteToWord.first());
+        convertByteToWord.deq();
         req <= addr;
         s <= Data;
     endrule
     
     rule get_wd if (s==Data);
-        Bit#(8) addr = 0;
-        addr = from_host.first();
-        from_host.deq();
-        /* bram.portA.request.put(BRAMRequestBE{ */
-        /*         writeen: -1, */
-        /*         responseOnWrite: False, */
-        /*         address:req, */
-        /* datain: zeroExtend(addr)}); */
-        wServer.request.put(AXI4_Lite_Write_Rq_Pkg{addr: zeroExtend(req[6:0]), data: zeroExtend(addr), strb: -1, prot: unpack(0)});
+        Bit#(32) addr = 0;
+        addr = pack(convertByteToWord.first());
+        convertByteToWord.deq();
+        wServer.request.put(AXI4_Lite_Write_Rq_Pkg{addr: req, data: addr, strb: -1, prot: unpack(0)});
         s <= Kind;
     endrule
     
     
     rule output_uart;
-        usb_core.uart_in(to_host.first());
-        if (usb_core.uart_in_ready() == 1) 
-            to_host.deq();
+        usb_core.uart_in(pack(convertWordToByte.first()));
+            if (usb_core.uart_in_ready() == 1) 
+                convertWordToByte.deq();
     endrule
 
 
